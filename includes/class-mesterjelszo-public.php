@@ -1,7 +1,8 @@
 <?php
 /**
  * A weboldal látogatói oldalát érintő logika: a jelszókérő "kapu" (gate)
- * megjelenítése, a REST API és a bejelentkezési felület zárolása.
+ * megjelenítése, a REST API és a bejelentkezési felület zárolása,
+ * szelektív REST API engedélyezés (Jetpack stb.), "Jegyezz meg" funkció.
  *
  * @package Mesterjelszo
  */
@@ -147,8 +148,42 @@ class Mesterjelszo_Public {
 	}
 
 	/**
+	 * Megmondja, hogy a jelenlegi REST kérés engedélyezett-e a szelektív
+	 * REST API engedélyezés miatt (pl. Jetpack).
+	 *
+	 * @return bool
+	 */
+	protected function is_rest_request_allowed(): bool {
+		$settings = Mesterjelszo_Admin::get_settings();
+
+		// Ha a REST API engedélyezés kikapcsolt, nem engedélyezünk semmit
+		if ( empty( $settings['rest_api_enabled'] ) ) {
+			return false;
+		}
+
+		if ( empty( $_SERVER['REQUEST_URI'] ) ) {
+			return false;
+		}
+
+		$uri = sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) );
+
+		// Jetpack API végpontok engedélyezése
+		$allowed_patterns = array(
+			'/wp-json/jetpack/',
+		);
+
+		foreach ( $allowed_patterns as $pattern ) {
+			if ( false !== strpos( $uri, $pattern ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * A REST API kérések védelme szabványos hitelesítési hiba
-	 * visszaadásával, ha a látogató nincs feloldva.
+	 * visszaadásával, ha a látogató nincs feloldva (és nem engedélyezett).
 	 *
 	 * @param mixed $result A szűrőláncban addig felhalmozott eredmény.
 	 * @return mixed
@@ -173,16 +208,22 @@ class Mesterjelszo_Public {
 			return $result;
 		}
 
-		return new WP_Error(
-			'mesterjelszo_rest_locked',
-			__( 'A weboldal jelszóval védett. A REST API jelenleg nem érhető el.', 'mesterjelszo' ),
-			array( 'status' => 401 )
-		);
+		// Ha a szelektív REST API engedélyezés be van kapcsolva, ellenőrizzük
+		if ( ! $this->is_rest_request_allowed() ) {
+			return new WP_Error(
+				'mesterjelszo_rest_locked',
+				__( 'A weboldal jelszóval védett. A REST API jelenleg nem érhető el.', 'mesterjelszo' ),
+				array( 'status' => 401 )
+			);
+		}
+
+		return $result;
 	}
 
 	/**
 	 * A jelszó-ellenőrző AJAX végpont. Nonce-t és brute-force limitet
 	 * ellenőriz, sikeres jelszó esetén munkamenetet hoz létre.
+	 * Támogatja a "Jegyezz meg" funkcionalitást.
 	 *
 	 * @return void
 	 */
@@ -212,7 +253,12 @@ class Mesterjelszo_Public {
 
 		if ( $this->security->verify_password( $password ) ) {
 			$this->security->reset_attempts();
-			$this->security->create_session();
+
+			// Ellenőrizzük, hogy bejelölt-e "Jegyezz meg"
+			$remember_me = isset( $_POST['mesterjelszo_remember_me'] ) && 
+							'1' === sanitize_text_field( wp_unslash( $_POST['mesterjelszo_remember_me'] ) );
+
+			$this->security->create_session( $remember_me );
 
 			$redirect = isset( $_POST['redirect_to'] )
 				? esc_url_raw( wp_unslash( $_POST['redirect_to'] ) )

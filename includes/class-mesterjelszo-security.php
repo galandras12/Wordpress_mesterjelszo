@@ -16,7 +16,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * - a mesterjelszó biztonságos, egyirányú hash alapú (a WordPress core
  *   jelszó-kezelési sztenderdjének megfelelő) tárolásáért és ellenőrzéséért;
  * - a látogatói munkamenetek (session) létrehozásáért és validálásáért;
- * - a brute-force támadások elleni próbálkozás-korlátozásért (rate limiting).
+ * - a brute-force támadások elleni próbálkozás-korlátozásért (rate limiting);
+ * - a "Jegyezz meg" (Remember Me) funkció kezeléséért.
  *
  * GDPR megjegyzés: a próbálkozás-korlátozáshoz szükséges azonosítót SOHA nem
  * tároljuk nyers, olvasható IP-címként. Az IP-t kizárólag egy egyirányú,
@@ -187,12 +188,20 @@ class Mesterjelszo_Security {
 	 * 3) a nyers tokent egy biztonságos, HttpOnly, SameSite=Strict sütiben
 	 *    helyezi el a látogató böngészőjében.
 	 *
+	 * @param bool $remember_me Ha true, a "Jegyezz meg" napok számát használja.
 	 * @return void
 	 */
-	public function create_session(): void {
+	public function create_session( bool $remember_me = false ): void {
 		$settings = Mesterjelszo_Admin::get_settings();
-		$hours    = max( 1, (int) $settings['session_duration'] );
-		$lifetime = $hours * HOUR_IN_SECONDS;
+
+		// Ha "Jegyezz meg" be van jelölve és engedélyezve van
+		if ( $remember_me && ! empty( $settings['remember_me_enabled'] ) ) {
+			$days    = max( 1, (int) $settings['remember_me_days'] );
+			$lifetime = $days * DAY_IN_SECONDS;
+		} else {
+			$hours    = max( 1, (int) $settings['session_duration'] );
+			$lifetime = $hours * HOUR_IN_SECONDS;
+		}
 
 		$token      = wp_generate_password( 64, false, false );
 		$token_hash = hash( 'sha256', $token );
