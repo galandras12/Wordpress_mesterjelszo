@@ -1,0 +1,17 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesterjelszó 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-20 00:00+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Domain: mesterjelszo\n"
+
+#. Ez a fájl egy kiindulási .pot sablon a Mesterjelszó bővítmény
+#. fordításához. A teljes, aktuális karakterlánc-listát javasolt a
+#. WP-CLI `wp i18n make-pot` parancsával újragenerálni a plugin
+#. gyökérkönyvtárában, mivel az minden __()/_e()/esc_html__() stb.
+#. hívást automatikusan felismer:
+#.
+#.   wp i18n make-pot . languages/mesterjelszo.pot
