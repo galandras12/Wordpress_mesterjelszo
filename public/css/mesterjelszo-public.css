@@ -1,0 +1,315 @@
+/*
+ * Mesterjelszó - publikus jelszókérő felület stílusai.
+ * Reszponzív, akadálymentes, világos és sötét módot is támogató design.
+ */
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html,
+body.mjz-body {
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	min-height: 100%;
+}
+
+body.mjz-body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+	line-height: 1.5;
+	min-height: 100vh;
+	display: flex;
+	color: var(--mjz-text, #ffffff);
+	--mjz-card-bg: rgba(20, 20, 30, 0.72);
+	--mjz-card-border: rgba(255, 255, 255, 0.12);
+	--mjz-input-bg: rgba(255, 255, 255, 0.08);
+	--mjz-input-border: rgba(255, 255, 255, 0.25);
+	--mjz-muted: rgba(255, 255, 255, 0.65);
+}
+
+body.mjz-light {
+	--mjz-card-bg: rgba(255, 255, 255, 0.88);
+	--mjz-card-border: rgba(20, 20, 30, 0.1);
+	--mjz-input-bg: rgba(20, 20, 30, 0.04);
+	--mjz-input-border: rgba(20, 20, 30, 0.18);
+	--mjz-muted: rgba(20, 20, 30, 0.6);
+}
+
+@media (prefers-color-scheme: light) {
+	body.mjz-auto {
+		--mjz-card-bg: rgba(255, 255, 255, 0.88);
+		--mjz-card-border: rgba(20, 20, 30, 0.1);
+		--mjz-input-bg: rgba(20, 20, 30, 0.04);
+		--mjz-input-border: rgba(20, 20, 30, 0.18);
+		--mjz-muted: rgba(20, 20, 30, 0.6);
+	}
+}
+
+/* Háttérréteg: külön elem, hogy az átlátszóság (opacity) csak a hátteret
+   érintse, a tartalom kártyáját ne halványítsa el. */
+.mjz-bg-layer {
+	position: fixed;
+	inset: 0;
+	z-index: -1;
+	opacity: var(--mjz-bg-opacity, 1);
+	background-color: #0b0c14;
+}
+
+body.mjz-light .mjz-bg-layer {
+	background-color: #eef0f6;
+}
+
+.mjz-wrapper {
+	flex: 1 1 auto;
+	width: 100%;
+	min-height: 100vh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: clamp(16px, 5vw, 48px);
+}
+
+.mjz-card {
+	width: 100%;
+	max-width: 460px;
+	background: var(--mjz-card-bg);
+	border: 1px solid var(--mjz-card-border);
+	border-radius: 20px;
+	padding: clamp(28px, 5vw, 48px);
+	text-align: center;
+	backdrop-filter: blur(14px);
+	-webkit-backdrop-filter: blur(14px);
+	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+	animation: mjz-fade-in 0.4s ease-out;
+}
+
+@keyframes mjz-fade-in {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.mjz-card {
+		animation: none;
+	}
+}
+
+.mjz-logo {
+	margin-bottom: 18px;
+}
+
+.mjz-logo img {
+	max-width: 100%;
+	max-height: 96px;
+	height: auto;
+	width: auto;
+}
+
+.mjz-lock-icon {
+	color: var(--mjz-accent, #6c5ce7);
+	margin: 4px 0 18px;
+}
+
+.mjz-site-name {
+	font-size: clamp(1.5rem, 4vw, 2rem);
+	font-weight: 700;
+	margin: 0 0 6px;
+	letter-spacing: -0.01em;
+}
+
+.mjz-screen-reader-text {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(1px, 1px, 1px, 1px);
+	white-space: nowrap;
+}
+
+.mjz-message {
+	font-size: clamp(1rem, 2.5vw, 1.125rem);
+	color: var(--mjz-muted);
+	margin: 0 0 28px;
+}
+
+.mjz-message p {
+	margin: 0 0 0.75em;
+}
+
+.mjz-message p:last-child {
+	margin-bottom: 0;
+}
+
+.mjz-message a {
+	color: var(--mjz-accent, #6c5ce7);
+}
+
+.mjz-form {
+	text-align: left;
+}
+
+.mjz-label {
+	display: block;
+	font-size: 0.95rem;
+	font-weight: 600;
+	margin-bottom: 8px;
+}
+
+.mjz-input-row {
+	position: relative;
+	display: flex;
+	align-items: stretch;
+}
+
+.mjz-input {
+	width: 100%;
+	font-size: 1.25rem;
+	padding: 14px 48px 14px 16px;
+	border-radius: 12px;
+	border: 1.5px solid var(--mjz-input-border);
+	background: var(--mjz-input-bg);
+	color: inherit;
+	letter-spacing: 0.05em;
+	min-height: 56px;
+}
+
+.mjz-input:focus,
+.mjz-input:focus-visible {
+	outline: 2px solid var(--mjz-accent, #6c5ce7);
+	outline-offset: 1px;
+	border-color: var(--mjz-accent, #6c5ce7);
+}
+
+.mjz-input[aria-invalid="true"] {
+	border-color: #e74c3c;
+}
+
+.mjz-toggle-visibility {
+	position: absolute;
+	right: 6px;
+	top: 50%;
+	transform: translateY(-50%);
+	background: none;
+	border: none;
+	cursor: pointer;
+	color: var(--mjz-muted);
+	padding: 10px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 8px;
+}
+
+.mjz-toggle-visibility:hover,
+.mjz-toggle-visibility:focus-visible {
+	color: inherit;
+	outline: 2px solid var(--mjz-accent, #6c5ce7);
+	outline-offset: 1px;
+}
+
+.mjz-error {
+	margin-top: 12px;
+	font-size: 0.95rem;
+	color: #ff6b6b;
+	font-weight: 600;
+}
+
+.mjz-error.mjz-locked {
+	background: rgba(231, 76, 60, 0.12);
+	border: 1px solid rgba(231, 76, 60, 0.4);
+	border-radius: 12px;
+	padding: 14px 16px;
+	margin-top: 0;
+	margin-bottom: 4px;
+}
+
+.mjz-submit {
+	width: 100%;
+	margin-top: 20px;
+	min-height: 56px;
+	font-size: 1.15rem;
+	font-weight: 700;
+	color: #ffffff;
+	background: var(--mjz-accent, #6c5ce7);
+	border: none;
+	border-radius: 12px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	transition: filter 0.15s ease, transform 0.05s ease;
+}
+
+.mjz-submit:hover {
+	filter: brightness(1.08);
+}
+
+.mjz-submit:active {
+	transform: scale(0.99);
+}
+
+.mjz-submit:focus-visible {
+	outline: 3px solid var(--mjz-accent, #6c5ce7);
+	outline-offset: 3px;
+}
+
+.mjz-submit:disabled {
+	opacity: 0.7;
+	cursor: not-allowed;
+}
+
+.mjz-spinner {
+	width: 18px;
+	height: 18px;
+	border-radius: 50%;
+	border: 2.5px solid rgba(255, 255, 255, 0.4);
+	border-top-color: #ffffff;
+	animation: mjz-spin 0.7s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.mjz-spinner {
+		animation-duration: 1.4s;
+	}
+}
+
+@keyframes mjz-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.mjz-footer-note {
+	margin: 28px 0 0;
+	font-size: 0.8rem;
+	color: var(--mjz-muted);
+}
+
+/* Mobil finomhangolás */
+@media (max-width: 420px) {
+	.mjz-card {
+		border-radius: 16px;
+	}
+
+	.mjz-input,
+	.mjz-submit {
+		font-size: 1.1rem;
+	}
+}
+
+/* Nagy kontrasztú / print eset: ne jelenjen meg nyomtatásban a jelszókérő. */
+@media print {
+	.mjz-wrapper {
+		display: none;
+	}
+}
