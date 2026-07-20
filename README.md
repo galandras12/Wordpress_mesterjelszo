@@ -101,5 +101,5 @@ Javaslataid, hibajelentéseid és pull requestjeid mindig szívesen látottak!
 
 ---
 
-**Készítő:** mesterjelszo  
-**Utolsó frissítés:** 2026
+**Készítő:** galandras12  
+**Utolsó frissítés:** 2026.07.20.
