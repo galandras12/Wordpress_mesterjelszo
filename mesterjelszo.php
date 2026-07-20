@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Mesterjelszó
  * Plugin URI: https://github.com/galandras12/Wordpress_mesterjelszo
- * Description: Teljes weboldal-védelem egyetlen mesterjelszóval: oldalak, bejegyzések, egyedi tartalomtípusok, a REST API és a bejelentkezési felület zárolása, modern, testreszabható admin felülettel.
- * Version: 1.0.0
+ * Description: Teljes weboldal-védelem egyetlen mesterjelszóval: oldalak, bejegyzések, egyedi tartalomtípusok, a REST API és a bejelentkezési felület zárolása, modern, testreszabható admin panel, szelektív REST API engedélyezés, "Jegyezz meg" funkció.
+ * Version: 1.0.1
  * Requires at least: 6.4
  * Tested up to: 7.0
  * Requires PHP: 8.0
@@ -19,11 +19,11 @@
 
 // Ha valaki közvetlenül próbálja meghívni a fájlt, ne engedjük.
 if ( ! defined( 'ABSPATH' ) ) {
- exit;
+	exit;
 }
 
 /** Plugin verziószám - cache-buster a beágyazott CSS/JS fájlokhoz. */
-define( 'MESTERJELSZO_VERSION', '1.0.0' );
+define( 'MESTERJELSZO_VERSION', '1.0.1' );
 
 /** A plugin fő fájljának abszolút elérési útja. */
 define( 'MESTERJELSZO_PLUGIN_FILE', __FILE__ );
@@ -49,15 +49,15 @@ define( 'MESTERJELSZO_COOKIE_NAME', 'mesterjelszo_session' );
  * jelenít meg, elkerülve ezzel a végzetes hibát (fatal error).
  */
 if ( version_compare( PHP_VERSION, '8.0', '<' ) ) {
- add_action(
-  'admin_notices',
-  function () {
-   echo '<div class="notice notice-error"><p>' .
-    esc_html__( 'A Mesterjelszó bővítmény működéséhez legalább PHP 8.0 verzió szükséges. Kérjük, egyeztess a tárhelyszolgáltatóddal a PHP verzió frissítéséről.', 'mesterjelszo' ) .
-    '</p></div>';
-  }
- );
- return;
+	add_action(
+		'admin_notices',
+		function () {
+			echo '<div class="notice notice-error"><p>' .
+				esc_html__( 'A Mesterjelszó bővítmény működéséhez legalább PHP 8.0 verzió szükséges. Kérjük, egyeztess a tárhelyszolgáltatóddal a PHP verzió frissítéséről.', 'mesterjelszo' ) .
+				'</p></div>';
+		}
+	);
+	return;
 }
 
 // A plugin osztályainak betöltése.
@@ -87,7 +87,7 @@ register_deactivation_hook( __FILE__, array( 'Mesterjelszo_Deactivator', 'deacti
  * @return void
  */
 function mesterjelszo_run() {
- $plugin = new Mesterjelszo();
- $plugin->run();
+	$plugin = new Mesterjelszo();
+	$plugin->run();
 }
 mesterjelszo_run();

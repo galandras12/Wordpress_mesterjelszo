@@ -62,21 +62,25 @@ class Mesterjelszo_Admin {
 	 */
 	public static function get_default_settings(): array {
 		return array(
-			'enabled'          => true,
-			'logo_id'          => 0,
-			'show_site_name'   => true,
-			'message'          => __( 'Ez a weboldal jelszóval védett. Kérjük, add meg a hozzáférési jelszót a tartalom megtekintéséhez.', 'mesterjelszo' ),
-			'bg_type'          => 'color',
-			'bg_color'         => '#1a1c2c',
-			'bg_image_id'      => 0,
-			'bg_opacity'       => 100,
-			'color_mode'       => 'dark',
-			'accent_color'     => '#6c5ce7',
-			'text_color'       => '#ffffff',
-			'session_duration' => 24,
-			'max_attempts'     => 5,
-			'lockout_duration' => 15,
-			'bypass_admins'    => true,
+			'enabled'                => true,
+			'logo_id'                => 0,
+			'show_site_name'         => true,
+			'message'                => __( 'Ez a weboldal jelszóval védett. Kérjük, add meg a hozzáférési jelszót a tartalom megtekintéséhez.', 'mesterjelszo' ),
+			'bg_type'                => 'color',
+			'bg_color'               => '#1a1c2c',
+			'bg_image_id'            => 0,
+			'bg_opacity'             => 100,
+			'color_mode'             => 'dark',
+			'accent_color'           => '#6c5ce7',
+			'text_color'             => '#ffffff',
+			'session_duration'       => 24,
+			'max_attempts'           => 5,
+			'lockout_duration'       => 15,
+			'bypass_admins'          => true,
+			'show_password'          => false,
+			'remember_me_enabled'    => false,
+			'remember_me_days'       => 15,
+			'rest_api_enabled'       => false,
 		);
 	}
 
@@ -225,6 +229,16 @@ class Mesterjelszo_Admin {
 
 		$output['bypass_admins'] = ! empty( $input['bypass_admins'] );
 
+		// 1.0.1 új beállítások
+		$output['show_password']       = ! empty( $input['show_password'] );
+		$output['remember_me_enabled'] = ! empty( $input['remember_me_enabled'] );
+
+		$output['remember_me_days'] = isset( $input['remember_me_days'] )
+			? max( 1, absint( $input['remember_me_days'] ) )
+			: $defaults['remember_me_days'];
+
+		$output['rest_api_enabled'] = ! empty( $input['rest_api_enabled'] );
+
 		// A mesterjelszót SZÁNDÉKOSAN nem a $input tömbön keresztül,
 		// hanem külön $_POST mezőkből dolgozzuk fel, mert ez a mező soha
 		// nem kerülhet be nyílt szövegként a mesterjelszo_settings option
@@ -329,6 +343,10 @@ class Mesterjelszo_Admin {
 				'confirmRemove'       => __( 'Biztosan eltávolítod a képet?', 'mesterjelszo' ),
 				'passwordMismatch'    => __( 'A két jelszó nem egyezik meg.', 'mesterjelszo' ),
 				'passwordTooShort'    => __( 'A jelszónak legalább 6 karakter hosszúnak kell lennie.', 'mesterjelszo' ),
+				'showPassword'        => __( 'Megjelenítés', 'mesterjelszo' ),
+				'hidePassword'        => __( 'Elrejtés', 'mesterjelszo' ),
+				'copyPassword'        => __( 'Másolás', 'mesterjelszo' ),
+				'passwordCopied'      => __( 'Jelszó vágólapra másolva!', 'mesterjelszo' ),
 			)
 		);
 	}
