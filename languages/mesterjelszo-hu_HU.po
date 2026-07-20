@@ -1,0 +1,100 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesterjelsz\u00f3 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-20 00:00+0000\n"
+"PO-Revision-Date: 2026-07-20 12:00+0000\n"
+"Last-Translator: Hungarian Translation\n"
+"Language-Team: Hungarian\n"
+"Language: hu_HU\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Domain: mesterjelszo\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: includes/class-mesterjelszo-admin.php:68
+msgid "Ez a weboldal jelszóval védett. Kérjük, add meg a hozzáférési jelszót a tartalom megtekintéséhez."
+msgstr "Ez a weboldal jelszóval védett. Kérjük, add meg a hozzáférési jelszót a tartalom megtekintéséhez."
+
+#: includes/class-mesterjelszo-admin.php:112
+msgid "Mesterjelsz\u00f3 beállítások"
+msgstr "Mesterjelsz\u00f3 beállítások"
+
+#: includes/class-mesterjelszo-admin.php:113
+msgid "Mesterjelsz\u00f3"
+msgstr "Mesterjelsz\u00f3"
+
+#: includes/class-mesterjelszo-admin.php:133
+msgid "Beállítások"
+msgstr "Beállítások"
+
+#: includes/class-mesterjelszo-admin.php:243
+msgid "A mesterjelsz\u00f3 sikeresen frissítve lett."
+msgstr "A mesterjelsz\u00f3 sikeresen frissítve lett."
+
+#: includes/class-mesterjelszo-admin.php:250
+msgid "A megadott két jelszó nem egyezik meg, ezért a mesterjelsz\u00f3 nem került frissítésre. A többi beállítás elmentésre került."
+msgstr "A megadott két jelszó nem egyezik meg, ezért a mesterjelsz\u00f3 nem került frissítésre. A többi beállítás elmentésre került."
+
+#: includes/class-mesterjelszo-admin.php:283
+msgid "A Mesterjelsz\u00f3 bővítmény be van kapcsolva, de még nincs mesterjelsz\u00f3 beállítva - a weboldal jelenleg NEM védett."
+msgstr "A Mesterjelsz\u00f3 bővítmény be van kapcsolva, de még nincs mesterjelsz\u00f3 beállítva - a weboldal jelenleg NEM védett."
+
+#: includes/class-mesterjelszo-admin.php:287
+msgid "Beállítás most"
+msgstr "Beállítás most"
+
+#: includes/class-mesterjelszo-admin.php:327
+msgid "Kép kiválasztása"
+msgstr "Kép kiválasztása"
+
+#: includes/class-mesterjelszo-admin.php:328
+msgid "Kiválasztás"
+msgstr "Kiválasztás"
+
+#: includes/class-mesterjelszo-admin.php:329
+msgid "Biztosan eltávolítod a képet?"
+msgstr "Biztosan eltávolítod a képet?"
+
+#: includes/class-mesterjelszo-admin.php:330
+msgid "A két jelszó nem egyezik meg."
+msgstr "A két jelszó nem egyezik meg."
+
+#: includes/class-mesterjelszo-admin.php:331
+msgid "A jelszónak legalább 6 karakter hosszúnak kell lennie."
+msgstr "A jelszónak legalább 6 karakter hosszúnak kell lennie."
+
+#: includes/class-mesterjelszo-admin.php:344
+msgid "Nincs jogosultságod ehhez az oldalhoz."
+msgstr "Nincs jogosultságod ehhez az oldalhoz."
+
+#: includes/class-mesterjelszo-public.php:117
+msgid "Hozzáférés megtagadva: a weboldal jelszóval védett."
+msgstr "Hozzáférés megtagadva: a weboldal jelszóval védett."
+
+#: includes/class-mesterjelszo-public.php:178
+msgid "A weboldal jelszóval védett. A REST API jelenleg nem elérhető."
+msgstr "A weboldal jelszóval védett. A REST API jelenleg nem elérhető."
+
+#: includes/class-mesterjelszo-public.php:197
+#, php-format
+msgid "Túl sok sikertelen próbálkozás történt. Kérjük, próbáld újra kb. %d perc múlva."
+msgstr "Túl sok sikertelen próbálkozás történt. Kérjük, próbáld újra kb. %d perc múlva."
+
+#: includes/class-mesterjelszo-public.php:210
+msgid "Kérjük, add meg a jelszót."
+msgstr "Kérjük, add meg a jelszót."
+
+#: includes/class-mesterjelszo-public.php:226
+msgid "Hibás jelszó. Kérjük, próbáld újra."
+msgstr "Hibás jelszó. Kérjük, próbáld újra."
+
+#: mesterjelszo.php:56
+msgid "A Mesterjelsz\u00f3 bővítmény működéséhez legalább PHP 8.0 verzió szükséges. Kérjük, egyeztess a tárhelyszolgáltatóddal a PHP verzió frissítéséről."
+msgstr "A Mesterjelsz\u00f3 bővítmény működéséhez legalább PHP 8.0 verzió szükséges. Kérjük, egyeztess a tárhelyszolgáltatóddal a PHP verzió frissítéséről."
