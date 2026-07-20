@@ -1,0 +1,591 @@
+/*
+ * Mesterjelszó - admin beállítási felület stílusai.
+ * Modern, kártya-alapú, reszponzív dizájn a WordPress admin design-nyelvén belül.
+ */
+
+.mjz-admin-wrap {
+	max-width: 1280px;
+	margin-top: 20px;
+}
+
+/* ---------- Fejléc ---------- */
+
+.mjz-admin-header {
+	display: flex;
+	align-items: center;
+	gap: 18px;
+	background: linear-gradient(135deg, #1a1c2c 0%, #2d2350 100%);
+	color: #ffffff;
+	border-radius: 16px;
+	padding: 28px 32px;
+	margin-bottom: 24px;
+	box-shadow: 0 8px 24px rgba(26, 28, 44, 0.18);
+}
+
+.mjz-admin-header-icon {
+	width: 56px;
+	height: 56px;
+	flex: 0 0 56px;
+	border-radius: 14px;
+	background: rgba(255, 255, 255, 0.12);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.mjz-admin-header-icon .dashicons {
+	font-size: 30px;
+	width: 30px;
+	height: 30px;
+	color: #ffffff;
+}
+
+.mjz-admin-header h1 {
+	color: #ffffff;
+	margin: 0 0 4px;
+	font-size: 1.6rem;
+	padding: 0;
+}
+
+.mjz-admin-subtitle {
+	margin: 0;
+	color: rgba(255, 255, 255, 0.75);
+	max-width: 560px;
+}
+
+.mjz-status-badge {
+	margin-left: auto;
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 16px;
+	border-radius: 999px;
+	font-size: 0.85rem;
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.mjz-status-dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	display: inline-block;
+}
+
+.mjz-status-active {
+	background: rgba(46, 204, 113, 0.18);
+	color: #2ecc71;
+}
+.mjz-status-active .mjz-status-dot {
+	background: #2ecc71;
+	box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.2);
+}
+
+.mjz-status-inactive {
+	background: rgba(231, 76, 60, 0.18);
+	color: #ff8a75;
+}
+.mjz-status-inactive .mjz-status-dot {
+	background: #ff8a75;
+}
+
+/* ---------- Elrendezés ---------- */
+
+.mjz-layout {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 340px;
+	gap: 24px;
+	align-items: start;
+}
+
+@media (max-width: 1100px) {
+	.mjz-layout {
+		grid-template-columns: 1fr;
+	}
+}
+
+.mjz-main-column {
+	min-width: 0;
+}
+
+/* ---------- Tabok ---------- */
+
+.mjz-tabs {
+	display: flex;
+	gap: 6px;
+	margin-bottom: 20px;
+	border-bottom: 1px solid #dcdcde;
+	flex-wrap: wrap;
+}
+
+.mjz-tab {
+	background: none;
+	border: none;
+	border-bottom: 3px solid transparent;
+	padding: 12px 18px;
+	font-size: 0.95rem;
+	font-weight: 600;
+	color: #50575e;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	border-radius: 6px 6px 0 0;
+}
+
+.mjz-tab .dashicons {
+	font-size: 18px;
+	width: 18px;
+	height: 18px;
+}
+
+.mjz-tab:hover {
+	background: #f0f0f5;
+	color: #1a1c2c;
+}
+
+.mjz-tab.is-active {
+	color: #6c5ce7;
+	border-bottom-color: #6c5ce7;
+}
+
+.mjz-tab:focus-visible {
+	outline: 2px solid #6c5ce7;
+	outline-offset: 2px;
+}
+
+.mjz-tab-panel {
+	display: none;
+}
+
+.mjz-tab-panel.is-active {
+	display: block;
+	animation: mjz-tab-fade 0.2s ease-out;
+}
+
+@keyframes mjz-tab-fade {
+	from {
+		opacity: 0;
+		transform: translateY(4px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+/* ---------- Kártyák ---------- */
+
+.mjz-card-box {
+	background: #ffffff;
+	border: 1px solid #e2e2e8;
+	border-radius: 14px;
+	padding: 24px 26px;
+	margin-bottom: 20px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.mjz-card-box h2 {
+	margin: 0 0 16px;
+	font-size: 1.05rem;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.mjz-card-box h2 .dashicons {
+	color: #6c5ce7;
+}
+
+.mjz-info-box ul {
+	margin: 0;
+	padding-left: 20px;
+}
+
+.mjz-info-box li {
+	margin-bottom: 8px;
+	color: #50575e;
+}
+
+/* ---------- Mezők ---------- */
+
+.mjz-field {
+	margin-bottom: 18px;
+}
+
+.mjz-field:last-child {
+	margin-bottom: 0;
+}
+
+.mjz-field label,
+.mjz-field-label-static {
+	display: block;
+	font-weight: 600;
+	margin-bottom: 6px;
+	color: #1a1c2c;
+}
+
+.mjz-field-description {
+	color: #6b7280;
+	font-size: 0.87rem;
+	margin: 6px 0 0;
+}
+
+.mjz-field-hint {
+	font-size: 0.87rem;
+	font-weight: 600;
+	min-height: 1.2em;
+	margin: 10px 0 0;
+}
+
+.mjz-field-hint.mjz-hint-ok {
+	color: #2ecc71;
+}
+
+.mjz-field-hint.mjz-hint-error {
+	color: #e74c3c;
+}
+
+.mjz-field-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 18px;
+}
+
+@media (max-width: 700px) {
+	.mjz-field-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+.mjz-field input[type="text"],
+.mjz-field input[type="password"],
+.mjz-field input[type="number"],
+.mjz-field textarea {
+	width: 100%;
+	max-width: 100%;
+	border-radius: 8px;
+	border: 1.5px solid #dcdcde;
+	padding: 9px 12px;
+}
+
+.mjz-field input[type="text"]:focus,
+.mjz-field input[type="password"]:focus,
+.mjz-field input[type="number"]:focus,
+.mjz-field textarea:focus {
+	border-color: #6c5ce7;
+	box-shadow: 0 0 0 1px #6c5ce7;
+}
+
+.mjz-password-input-row {
+	display: flex;
+	gap: 8px;
+}
+
+.mjz-password-input-row input {
+	flex: 1 1 auto;
+}
+
+/* ---------- Kapcsolók (toggle switch) ---------- */
+
+.mjz-switch-row {
+	display: flex;
+	align-items: flex-start;
+	gap: 14px;
+	cursor: pointer;
+}
+
+.mjz-switch {
+	position: relative;
+	display: inline-block;
+	width: 44px;
+	height: 24px;
+	flex: 0 0 44px;
+	margin-top: 2px;
+}
+
+.mjz-switch input {
+	opacity: 0;
+	width: 0;
+	height: 0;
+	position: absolute;
+}
+
+.mjz-switch-slider {
+	position: absolute;
+	inset: 0;
+	background: #ccc;
+	border-radius: 999px;
+	transition: background-color 0.15s ease;
+}
+
+.mjz-switch-slider::before {
+	content: "";
+	position: absolute;
+	width: 18px;
+	height: 18px;
+	left: 3px;
+	top: 3px;
+	background: #ffffff;
+	border-radius: 50%;
+	transition: transform 0.15s ease;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.mjz-switch input:checked + .mjz-switch-slider {
+	background: #6c5ce7;
+}
+
+.mjz-switch input:checked + .mjz-switch-slider::before {
+	transform: translateX(20px);
+}
+
+.mjz-switch input:focus-visible + .mjz-switch-slider {
+	outline: 2px solid #6c5ce7;
+	outline-offset: 2px;
+}
+
+.mjz-switch-label {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+/* ---------- Radio pill csoportok ---------- */
+
+.mjz-radio-group {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.mjz-radio-pill {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	border: 1.5px solid #dcdcde;
+	border-radius: 999px;
+	padding: 8px 16px;
+	cursor: pointer;
+	font-size: 0.9rem;
+	font-weight: 500;
+	transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.mjz-radio-pill:has(input:checked) {
+	border-color: #6c5ce7;
+	background: rgba(108, 92, 231, 0.08);
+	color: #6c5ce7;
+	font-weight: 700;
+}
+
+.mjz-radio-pill input {
+	margin: 0;
+}
+
+/* ---------- Média (logó / háttérkép) választó ---------- */
+
+.mjz-media-picker {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	flex-wrap: wrap;
+}
+
+.mjz-media-preview {
+	width: 84px;
+	height: 84px;
+	border-radius: 10px;
+	border: 1.5px dashed #c5c5d1;
+	background: #f7f7fb;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	flex: 0 0 auto;
+}
+
+.mjz-media-preview-wide {
+	width: 140px;
+}
+
+.mjz-media-preview img {
+	max-width: 100%;
+	max-height: 100%;
+	object-fit: cover;
+}
+
+.mjz-media-placeholder {
+	color: #b5b5c3;
+	font-size: 28px;
+}
+
+.mjz-media-actions {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+/* ---------- Range slider ---------- */
+
+.mjz-range-value {
+	font-weight: 700;
+	color: #6c5ce7;
+}
+
+input[type="range"] {
+	width: 100%;
+	accent-color: #6c5ce7;
+}
+
+/* ---------- Inline állapot jelzők ---------- */
+
+.mjz-inline-status {
+	display: inline-block;
+	font-weight: 700;
+	margin-right: 4px;
+}
+
+.mjz-inline-status-ok {
+	color: #2ecc71;
+}
+
+.mjz-inline-status-warn {
+	color: #e67e22;
+}
+
+/* ---------- Mentés gomb ---------- */
+
+.mjz-submit-row {
+	margin-top: 4px;
+}
+
+.mjz-save-button.button-primary {
+	background: #6c5ce7;
+	border-color: #5a4bd1;
+	padding: 6px 26px;
+	height: auto;
+	font-weight: 600;
+	border-radius: 8px;
+}
+
+.mjz-save-button.button-primary:hover {
+	background: #5a4bd1;
+}
+
+/* ---------- Élő előnézet oldalsáv ---------- */
+
+.mjz-preview-column {
+	min-width: 0;
+}
+
+.mjz-preview-sticky {
+	position: sticky;
+	top: 40px;
+}
+
+.mjz-preview-title {
+	margin: 4px 0 4px;
+}
+
+.mjz-preview-frame {
+	position: relative;
+	margin-top: 14px;
+	border-radius: 16px;
+	overflow: hidden;
+	min-height: 420px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+	background: #1a1c2c;
+}
+
+.mjz-preview-bg {
+	position: absolute;
+	inset: 0;
+	background-color: #1a1c2c;
+	background-size: cover;
+	background-position: center;
+	transition: opacity 0.15s ease, background-color 0.15s ease, background-image 0.15s ease;
+}
+
+.mjz-preview-card {
+	position: relative;
+	z-index: 1;
+	width: 100%;
+	max-width: 240px;
+	background: rgba(20, 20, 30, 0.72);
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	border-radius: 14px;
+	padding: 22px 18px;
+	text-align: center;
+	color: #ffffff;
+	backdrop-filter: blur(10px);
+	transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.mjz-preview-logo {
+	min-height: 0;
+}
+
+.mjz-preview-logo img {
+	max-width: 100%;
+	max-height: 48px;
+	margin-bottom: 10px;
+}
+
+.mjz-preview-sitename {
+	font-weight: 700;
+	font-size: 1rem;
+	margin-bottom: 6px;
+}
+
+.mjz-preview-lock {
+	font-size: 22px;
+	margin: 4px 0 8px;
+}
+
+.mjz-preview-message {
+	font-size: 0.78rem;
+	opacity: 0.75;
+	margin-bottom: 14px;
+	line-height: 1.4;
+	max-height: 4.2em;
+	overflow: hidden;
+}
+
+.mjz-preview-input {
+	background: rgba(255, 255, 255, 0.08);
+	border: 1px solid rgba(255, 255, 255, 0.25);
+	border-radius: 8px;
+	padding: 8px 10px;
+	font-size: 0.78rem;
+	text-align: left;
+	opacity: 0.6;
+	margin-bottom: 10px;
+}
+
+.mjz-preview-button {
+	background: #6c5ce7;
+	color: #fff;
+	border-radius: 8px;
+	padding: 9px;
+	font-weight: 700;
+	font-size: 0.85rem;
+}
+
+/* Világos mód előnézet segéd-osztály (JS állítja be szükség esetén) */
+.mjz-preview-card.mjz-preview-light {
+	background: rgba(255, 255, 255, 0.9);
+	color: #1a1c2c;
+	border-color: rgba(20, 20, 30, 0.1);
+}
+
+.mjz-preview-card.mjz-preview-light .mjz-preview-input {
+	background: rgba(20, 20, 30, 0.05);
+	border-color: rgba(20, 20, 30, 0.15);
+}
