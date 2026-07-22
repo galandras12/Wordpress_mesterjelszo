@@ -287,6 +287,24 @@
 	flex: 1 1 auto;
 }
 
+.mjz-current-password-display {
+	font-family: Consolas, Monaco, monospace;
+	letter-spacing: 0.05em;
+	background: #f7f7fb;
+	cursor: text;
+}
+
+.mjz-field-divider {
+	border: none;
+	border-top: 1px solid #eaeaef;
+	margin: 20px 0;
+}
+
+.mjz-field.is-disabled {
+	opacity: 0.5;
+	pointer-events: none;
+}
+
 /* ---------- Kapcsolók (toggle switch) ---------- */
 
 .mjz-switch-row {
