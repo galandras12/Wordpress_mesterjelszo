@@ -1,33 +1,66 @@
 /**
  * Mesterjelszó - admin beállítási felület viselkedése.
- * jQuery-t használ, mivel a WordPress admin felület wp-color-picker és
- * media uploader komponensei is jQuery-alapúak.
+ * jQuery-t használ a wp-color-picker és media uploader komponensekhez
+ * (ezek maguk is jQuery/Backbone-alapúak), DE az indítás SZÁNDÉKOSAN NEM
+ * a jQuery megosztott document-ready eseménysorán keresztül történik -
+ * lásd az alábbi, mjzAdminInit() előtti megjegyzést.
  */
 (function ($) {
 	'use strict';
 
-	$(function () {
-		// A tab-váltás logikája SZÁNDÉKOSAN NEM itt, jQuery document-ready
-		// callback-en belül fut, hanem egy önálló, natív JavaScript
-		// <script> blokkban, közvetlenül a settings-page.php nav eleme
-		// mellett. Ennek oka: ha egy másik, ugyanazon az admin oldalon
-		// betöltődő bővítmény szkriptje hibát dob a jQuery(document).ready()
-		// sorban, az megakaszthatja a SORBAN UTÁNA regisztrált ready
-		// callback-eket - ez azt eredményezhetné, hogy a fülek hover
-		// állapota (tiszta CSS) továbbra is működik, de a kattintásra
-		// történő váltás (jQuery-függő JS) nem. A natív script ettől
-		// teljesen független, ezért mindig működik.
-		initColorPickers();
-		initMediaPickers();
-		initOpacitySlider();
-		initBgTypeToggle();
-		initPasswordToggle();
-		initPasswordMatchValidation();
-		initLivePreview();
-		initRevealPassword();
-		initRememberMeToggle();
-		initTrustedIpsToggle();
-	});
+	/**
+	 * 1.0.4 HOTFIX: korábban minden inicializáló függvény egyetlen,
+	 * jQuery(document).ready() callback-en belül futott. Kiderült, hogy ha
+	 * egy MÁSIK, ugyanazon az admin oldalon betöltődő bővítmény szkriptje
+	 * hibát dob a saját, szintén jQuery ready-re feliratkozó kódjában, az
+	 * bizonyos körülmények között megakaszthatja az UTÁNA regisztrált
+	 * ready callback-eket - ez korábban a fülváltást (1.0.3-ban javítva),
+	 * majd kiderült, hogy a színválasztót és a médiafeltöltő gombokat is
+	 * (jelen, 1.0.4-es javítás) érintette, mivel mindegyik ugyanabban a
+	 * veszélyeztetett callback-ben futott.
+	 *
+	 * A végleges megoldás: az indítás natív `document.readyState` /
+	 * `DOMContentLoaded` alapú, TELJESEN függetlenül a jQuery saját,
+	 * megosztott ready-sorától - így más bővítmények szkript-hibái nem
+	 * tudják megakasztani. Emellett minden egyes funkció külön try/catch
+	 * blokkban fut: ha valamelyik (pl. a színválasztó, ha hiányzik egy
+	 * függősége) mégis hibát dobna, az a többi funkció (média-feltöltő,
+	 * élő előnézet stb.) működését többé nem akaszthatja meg.
+	 */
+	function mjzAdminInit() {
+		var initializers = [
+			initColorPickers,
+			initMediaPickers,
+			initOpacitySlider,
+			initBgTypeToggle,
+			initPasswordToggle,
+			initPasswordMatchValidation,
+			initLivePreview,
+			initRevealPassword,
+			initRememberMeToggle,
+			initTrustedIpsToggle
+		];
+
+		for (var i = 0; i < initializers.length; i++) {
+			try {
+				initializers[i]();
+			} catch (error) {
+				// eslint-disable-next-line no-console
+				if (window.console && window.console.error) {
+					window.console.error('Mesterjelszó admin JS hiba (' + (initializers[i].name || 'ismeretlen funkció') + '):', error);
+				}
+			}
+		}
+	}
+
+	if ('loading' === document.readyState) {
+		document.addEventListener('DOMContentLoaded', mjzAdminInit);
+	} else {
+		// A script footer-ben töltődik be, ezért a DOMContentLoaded esemény
+		// gyakran már lefutott, mire idáig ér a végrehajtás - ilyenkor
+		// azonnal futtatunk, nem várunk egy már elszalasztott eseményre.
+		mjzAdminInit();
+	}
 
 	/**
 	 * A WordPress natív színválasztójának (wp-color-picker) inicializálása

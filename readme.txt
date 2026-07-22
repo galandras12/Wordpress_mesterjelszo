@@ -4,7 +4,7 @@ Tags: password protection, security, maintenance mode, coming soon, access contr
 Requires at least: 6.4
 Tested up to: 7.0.1
 Requires PHP: 8.0
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -72,6 +72,10 @@ Ez egy ismert, 1.0.2-ben javított probléma volt: a bővítmény korábban mind
 Kizárólag manage_options jogosultsággal rendelkező adminisztrátorok. A napló a sikertelen mesterjelszó-próbálkozások valódi IP-címét, valamint a hozzá tartozó (külső szolgáltatáson keresztül lekérdezett) ország/város adatokat tárolja, legfeljebb 1 évig. Ez eltér a plugin többi részének anonimizált IP-kezelésétől - ha ezt a funkciót használod, érdemes megemlítened a weboldalad adatkezelési tájékoztatójában.
 
 == Changelog ==
+
+= 1.0.4 =
+* HOTFIX: a háttérszín-választó palettája és a logó/háttérkép kiválasztó gombjai nem működtek (ugyanaz a jQuery ready-sor probléma okozta, mint az 1.0.3-ban javított fül-váltási hibát). Az admin JS indítása mostantól teljesen független natív JavaScript-re épül, minden funkció külön hibavédelemmel.
+* Változás: a jelszókérő felület alapértelmezett megjelenési módja mostantól "Világos" (korábban "Sötét" volt), az ehhez illő alapértelmezett háttér- és szövegszínekkel.
 
 = 1.0.3 =
 * HOTFIX: az admin felület "Megjelenés", "Biztonság" és "Bejelentkezési napló" fülei nem nyíltak meg kattintásra (csak a hover-állapot látszott) egyes bővítmény-kombinációk mellett. A tab-váltás mostantól egy önálló, más szkriptek hibáitól teljesen független natív JavaScript kódra épül.

@@ -6,6 +6,67 @@ verziónként. A readme.txt "Changelog" szekciója ennek csak rövid,
 összefoglaló kivonatát tartalmazza.
 
 
+## [1.0.4] - HOTFIX
+
+### Kritikus javítás: színválasztó és médiafeltöltő gombok nem működtek
+
+Az 1.0.3-ban javított fül-váltási hiba ugyanazon gyökérokának egy másik,
+addig fel nem ismert következménye jelentkezett: az admin felületen a
+háttérszín-választó palettája nem jelent meg (sem a világos, sem a sötét
+téma-barát színek), a logó és a háttérkép "Kiválasztás" gombjaira kattintva
+pedig egyáltalán nem nyílt meg a WordPress média-feltöltő ablak.
+
+**Ok:** az 1.0.3-as javítás kizárólag a fülváltás logikáját emelte ki a
+megosztott `jQuery(document).ready()` eseménysorból - a színválasztó
+(`initColorPickers()`) és a média-feltöltő (`initMediaPickers()`)
+inicializálása, valamint az összes többi admin.js funkció, továbbra is
+ugyanabban a veszélyeztetett callback-ben futott. Ha egy másik, ugyanazon
+az admin oldalon betöltődő bővítmény szkriptje hibát dob a saját
+ready-callback-jében, az megakaszthatja az ez után regisztrált
+callback-eket - jelen esetben a plugin TELJES admin.js inicializálását,
+nem csak egy részét.
+
+**Javítás:** az admin.js indítási mechanizmusa véglegesen átalakult:
+- többé nem `jQuery(document).ready()`-n keresztül indul, hanem natív
+  `document.readyState` ellenőrzéssel és `DOMContentLoaded`
+  eseményfigyelővel - ez teljesen független a jQuery saját, megosztott
+  ready-sorától, ezért más bővítmények szkript-hibái nem tudják
+  megakasztani;
+- minden egyes inicializáló funkció (színválasztó, média-feltöltő,
+  átlátszóság csúszka, háttértípus-váltó, jelszó-mutat gombok,
+  jelszó-egyezés ellenőrzés, élő előnézet, jelszó-megtekintés,
+  "emlékezz rám" kapcsoló, megbízható IP-k kapcsoló) mostantól KÜLÖN
+  try/catch blokkban fut - ha bármelyik hibát dobna (pl. hiányzó
+  függőség miatt), az többé nem akasztja meg a többi funkció indulását;
+  a hiba a böngésző konzoljába kerül kiírásra, jól azonosíthatóan a
+  funkció nevével.
+
+A wp-color-picker és a wp.media komponensek maguk természetesen továbbra
+is jQuery/Backbone-alapúak és jQuery-t igényelnek - ez nem változott,
+csak az INDÍTÁSUK módja lett független a megosztott ready-sortól.
+
+### Változás: alapértelmezett megjelenési mód
+
+A jelszókérő felület alapértelmezett megjelenési módja "Sötét"-ről
+"Világos"-ra változott, az ehhez illő, olvasható kontrasztú
+alapértelmezett háttér- (`#eef2f7`) és szövegszínnel (`#1a1c2c`).
+FONTOS: ez a változás KIZÁRÓLAG az újonnan telepített (vagy a
+beállításokat még sosem mentett) weboldalakat érinti - ha már korábban
+elmentetted a megjelenési beállításokat, azok változatlanul megmaradnak,
+a mentett érték felülírja az alapértéket.
+
+### Technikai részletek fejlesztőknek
+
+- `admin/js/mesterjelszo-admin.js`: az indítás `mjzAdminInit()` néven
+  önálló függvénybe szervezve, `document.readyState`/`DOMContentLoaded`
+  alapon hívva; minden korábbi `init*()` hívás egy tömbön keresztül,
+  egyenként try/catch-csel védve fut le.
+- `includes/class-mesterjelszo-admin.php`:
+  `get_default_settings()` - `color_mode` alapértéke `'dark'` → `'light'`,
+  `bg_color` alapértéke `'#1a1c2c'` → `'#eef2f7'`,
+  `text_color` alapértéke `'#ffffff'` → `'#1a1c2c'`.
+
+
 ## [1.0.3] - HOTFIX
 
 ### Kritikus javítás: az admin fülek nem nyíltak meg kattintásra

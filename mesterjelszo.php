@@ -3,7 +3,7 @@
  * Plugin Name:       Mesterjelszó
  * Plugin URI:        https://github.com/galandras12/Wordpress_mesterjelszo
  * Description:       Teljes weboldal-védelem egyetlen mesterjelszóval: oldalak, bejegyzések, egyedi tartalomtípusok, a REST API és a bejelentkezési felület zárolása, modern, testreszabható admin felülettel.
- * Version:           1.0.3
+ * Version:           1.0.4
  * Requires at least: 6.4
  * Tested up to:      7.0.1
  * Requires PHP:      8.0
@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /** Plugin verziószám - cache-buster a beágyazott CSS/JS fájlokhoz. */
-define( 'MESTERJELSZO_VERSION', '1.0.3' );
+define( 'MESTERJELSZO_VERSION', '1.0.4' );
 
 /**
  * Adatbázis-séma verziószám. Ha ez eltér a tárolt 'mesterjelszo_db_version'
