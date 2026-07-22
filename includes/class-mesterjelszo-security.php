@@ -25,6 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * állítható vissza, és az adat magától törlődik a lejárati idő után.
  */
 class Mesterjelszo_Security {
+        // 1.0.2-compat: SameSite Lax-ra állítva, hogy AJAX login-nal kompatibilis legyen
 
 	/**
 	 * Beállítja (felülírja) a mesterjelszót. A tényleges hitelesítéshez
@@ -334,7 +335,7 @@ class Mesterjelszo_Security {
 					'domain'   => $domain,
 					'secure'   => $secure,
 					'httponly' => true,
-					'samesite' => 'Strict',
+					'samesite' => 'Lax',
 				)
 			);
 		}
