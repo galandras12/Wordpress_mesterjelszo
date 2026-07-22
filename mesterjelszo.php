@@ -1,18 +1,18 @@
 <?php
 /**
- * Plugin Name: Mesterjelszó
- * Plugin URI: https://github.com/galandras12/Wordpress_mesterjelszo
- * Description: Teljes weboldal-védelem egyetlen mesterjelszóval: oldalak, bejegyzések, egyedi tartalomtípusok, a REST API és a bejelentkezési felület zárolása, modern, testreszabható admin panel, szelektív REST API engedélyezés, "Jegyezz meg" funkció.
- * Version: 1.0.1
+ * Plugin Name:       Mesterjelszó
+ * Plugin URI:        https://github.com/galandras12/Wordpress_mesterjelszo
+ * Description:       Teljes weboldal-védelem egyetlen mesterjelszóval: oldalak, bejegyzések, egyedi tartalomtípusok, a REST API és a bejelentkezési felület zárolása, modern, testreszabható admin felülettel.
+ * Version:           1.0.1
  * Requires at least: 6.4
- * Tested up to: 7.0
- * Requires PHP: 8.0
- * Author: Mesterjelszó
- * Author URI: https://github.com/galandras12/
- * License: GPL v2 or later
- * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain: mesterjelszo
- * Domain Path: /languages
+ * Tested up to:      7.0.1
+ * Requires PHP:      8.0
+ * Author:            galandras12 + AI
+ * Author URI:        https://github.com/galandras12
+ * License:           GPL v2 or later
+ * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain:       mesterjelszo
+ * Domain Path:       /languages
  *
  * @package Mesterjelszo
  */
@@ -39,6 +39,15 @@ define( 'MESTERJELSZO_OPTION_KEY', 'mesterjelszo_settings' );
 
 /** A mesterjelszó hash-elt formájának tárolására szolgáló wp_options kulcs. */
 define( 'MESTERJELSZO_PASSWORD_OPTION_KEY', 'mesterjelszo_password_hash' );
+
+/**
+ * A mesterjelszó visszafejthető, titkosított másolatának tárolására
+ * szolgáló wp_options kulcs. Ez KIZÁRÓLAG az admin felületen történő,
+ * csapattagok közti megtekintést szolgálja - a látogatói jelszó-ellenőrzés
+ * mindig a fenti, egyirányú hash-t használja, ez a mező soha nem vesz részt
+ * a tényleges hitelesítésben.
+ */
+define( 'MESTERJELSZO_PASSWORD_ENCRYPTED_OPTION_KEY', 'mesterjelszo_password_encrypted' );
 
 /** A látogatói munkamenetet azonosító süti neve. */
 define( 'MESTERJELSZO_COOKIE_NAME', 'mesterjelszo_session' );
