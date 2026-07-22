@@ -107,6 +107,11 @@
 			body.append('mesterjelszo_password', password);
 			body.append('redirect_to', redirectTo);
 
+			var rememberCheckbox = document.getElementById('mjz-remember');
+			if (rememberCheckbox && rememberCheckbox.checked) {
+				body.append('remember_me', '1');
+			}
+
 			fetch(ajaxUrl, {
 				method: 'POST',
 				credentials: 'same-origin',
