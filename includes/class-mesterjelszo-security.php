@@ -16,8 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * - a mesterjelszó biztonságos, egyirányú hash alapú (a WordPress core
  *   jelszó-kezelési sztenderdjének megfelelő) tárolásáért és ellenőrzéséért;
  * - a látogatói munkamenetek (session) létrehozásáért és validálásáért;
- * - a brute-force támadások elleni próbálkozás-korlátozásért (rate limiting);
- * - a "Jegyezz meg" (Remember Me) funkció kezeléséért.
+ * - a brute-force támadások elleni próbálkozás-korlátozásért (rate limiting).
  *
  * GDPR megjegyzés: a próbálkozás-korlátozáshoz szükséges azonosítót SOHA nem
  * tároljuk nyers, olvasható IP-címként. Az IP-t kizárólag egy egyirányú,
@@ -28,14 +27,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Mesterjelszo_Security {
 
 	/**
-	 * Beállítja (felülírja) a mesterjelszót. A jelszót SOHA nem tároljuk
-	 * visszafejthető ("titkosított, de visszafejthető") formában - ehelyett
-	 * a WordPress core wp_hash_password() függvényét használjuk, amely
-	 * ugyanazt az egyirányú hash-elési sztenderdet alkalmazza, mint amit a
-	 * WordPress a felhasználói jelszavak tárolására is használ. Ez a
-	 * WordPress által ajánlott, biztonságos módszer - egy visszafejthető
-	 * titkosítás ennél kevésbé lenne biztonságos, mert az adatbázishoz
-	 * hozzáférő támadó vissza tudná fejteni a jelszót.
+	 * Beállítja (felülírja) a mesterjelszót. A tényleges hitelesítéshez
+	 * használt, elsődleges tárolási forma továbbra is a WordPress core
+	 * wp_hash_password() függvényével képzett, egyirányú (visszafejthetetlen)
+	 * hash - ez nem változott.
+	 *
+	 * Emellett - kizárólag az admin felületen történő, csapattagok közti
+	 * megtekintés lehetővé tételéhez - eltárolunk egy MÁSODIK, visszafejthető
+	 * másolatot is, AES-256-CBC titkosítással, a WordPress saját,
+	 * wp-config.php-ban tárolt AUTH_KEY/AUTH_SALT értékeiből származtatott
+	 * kulccsal. Ez a második másolat SOHA nem vesz részt a látogatói
+	 * jelszó-ellenőrzésben, kizárólag a Mesterjelszo_Security::get_current_password_plaintext()
+	 * metóduson keresztül, admin jogosultsággal kérdezhető le.
 	 *
 	 * @param string $plain_password A beállítandó jelszó nyílt szövegként.
 	 * @return void
@@ -51,6 +54,109 @@ class Mesterjelszo_Security {
 
 		$hash = wp_hash_password( $plain_password );
 		update_option( MESTERJELSZO_PASSWORD_OPTION_KEY, $hash, false );
+
+		if ( function_exists( 'openssl_encrypt' ) ) {
+			$encrypted = $this->encrypt_password_for_display( $plain_password );
+
+			if ( '' !== $encrypted ) {
+				update_option( MESTERJELSZO_PASSWORD_ENCRYPTED_OPTION_KEY, $encrypted, false );
+			} else {
+				delete_option( MESTERJELSZO_PASSWORD_ENCRYPTED_OPTION_KEY );
+			}
+		} else {
+			// Ha a szerveren nincs elérhető OpenSSL bővítmény, a
+			// megtekinthető másolatot nem tudjuk előállítani - ilyenkor a
+			// funkció automatikusan inaktív marad, a hash-elt forma viszont
+			// továbbra is rendben tárolódik és működik.
+			delete_option( MESTERJELSZO_PASSWORD_ENCRYPTED_OPTION_KEY );
+		}
+	}
+
+	/**
+	 * A titkosításhoz/visszafejtéshez használt kulcs előállítása a
+	 * WordPress saját, kizárólag a wp-config.php fájlban (tehát NEM az
+	 * adatbázisban) tárolt titkos kulcsaiból. Ez védelmi réteget ad: egy
+	 * pusztán adatbázis-szintű adatszivárgás önmagában nem elegendő a
+	 * titkosított mesterjelszó visszafejtéséhez.
+	 *
+	 * @return string 32 bájt hosszú, nyers bináris kulcs (AES-256-hoz).
+	 */
+	protected function get_encryption_key(): string {
+		$material  = defined( 'AUTH_KEY' ) && AUTH_KEY ? AUTH_KEY : 'mesterjelszo-fallback-auth-key';
+		$material .= defined( 'AUTH_SALT' ) && AUTH_SALT ? AUTH_SALT : 'mesterjelszo-fallback-auth-salt';
+		$material .= defined( 'SECURE_AUTH_KEY' ) && SECURE_AUTH_KEY ? SECURE_AUTH_KEY : '';
+
+		return hash( 'sha256', $material, true );
+	}
+
+	/**
+	 * A jelszó AES-256-CBC titkosítása, base64-kódolt, az IV-t is
+	 * tartalmazó formában való visszaadása.
+	 *
+	 * @param string $plain_password A titkosítandó jelszó.
+	 * @return string A titkosított, base64-kódolt érték, vagy üres string hiba esetén.
+	 */
+	protected function encrypt_password_for_display( string $plain_password ): string {
+		if ( '' === $plain_password || ! function_exists( 'openssl_encrypt' ) ) {
+			return '';
+		}
+
+		$key = $this->get_encryption_key();
+		$iv  = random_bytes( 16 );
+
+		$cipher_text = openssl_encrypt( $plain_password, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $iv );
+
+		if ( false === $cipher_text ) {
+			return '';
+		}
+
+		return base64_encode( $iv . $cipher_text ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+	}
+
+	/**
+	 * A titkosított jelszó visszafejtése.
+	 *
+	 * @param string $encoded A base64-kódolt, titkosított érték.
+	 * @return string A visszafejtett jelszó, vagy üres string hiba esetén.
+	 */
+	protected function decrypt_password_for_display( string $encoded ): string {
+		if ( '' === $encoded || ! function_exists( 'openssl_decrypt' ) ) {
+			return '';
+		}
+
+		$raw = base64_decode( $encoded, true ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
+
+		if ( false === $raw || strlen( $raw ) <= 16 ) {
+			return '';
+		}
+
+		$iv          = substr( $raw, 0, 16 );
+		$cipher_text = substr( $raw, 16 );
+		$key         = $this->get_encryption_key();
+
+		$plain = openssl_decrypt( $cipher_text, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $iv );
+
+		return false === $plain ? '' : $plain;
+	}
+
+	/**
+	 * A jelenleg érvényes mesterjelszó visszaadása nyílt szövegként, KIZÁRÓLAG
+	 * admin felületi megtekintésre szánva. A hívó félnek (Mesterjelszo_Admin)
+	 * kötelessége a manage_options jogosultság és a nonce ellenőrzése, mielőtt
+	 * ezt a metódust meghívja.
+	 *
+	 * @return string A jelenlegi mesterjelszó, vagy üres string, ha nem
+	 *                érhető el (pl. nincs beállítva, vagy a szerveren nincs
+	 *                OpenSSL támogatás).
+	 */
+	public function get_current_password_plaintext(): string {
+		$encoded = get_option( MESTERJELSZO_PASSWORD_ENCRYPTED_OPTION_KEY, '' );
+
+		if ( empty( $encoded ) ) {
+			return '';
+		}
+
+		return $this->decrypt_password_for_display( $encoded );
 	}
 
 	/**
@@ -188,15 +294,20 @@ class Mesterjelszo_Security {
 	 * 3) a nyers tokent egy biztonságos, HttpOnly, SameSite=Strict sütiben
 	 *    helyezi el a látogató böngészőjében.
 	 *
-	 * @param bool $remember_me Ha true, a "Jegyezz meg" napok számát használja.
+	 * @param bool $remember Ha true ÉS az admin bekapcsolta az "Emlékezz rám"
+	 *                       funkciót, a munkamenet a beállított napok számáig
+	 *                       (alapértelmezetten 15 nap) érvényes marad a
+	 *                       szokásos, óra-alapú munkamenet-hossz helyett.
+	 *                       Az admin beállítása mindig felülbírálja a
+	 *                       kliens által küldött értéket - ha a funkció ki
+	 *                       van kapcsolva, a $remember=true érték hatástalan.
 	 * @return void
 	 */
-	public function create_session( bool $remember_me = false ): void {
+	public function create_session( bool $remember = false ): void {
 		$settings = Mesterjelszo_Admin::get_settings();
 
-		// Ha "Jegyezz meg" be van jelölve és engedélyezve van
-		if ( $remember_me && ! empty( $settings['remember_me_enabled'] ) ) {
-			$days    = max( 1, (int) $settings['remember_me_days'] );
+		if ( $remember && ! empty( $settings['remember_me_enabled'] ) ) {
+			$days     = max( 1, (int) $settings['remember_me_days'] );
 			$lifetime = $days * DAY_IN_SECONDS;
 		} else {
 			$hours    = max( 1, (int) $settings['session_duration'] );
