@@ -1,8 +1,7 @@
 <?php
 /**
  * A weboldal látogatói oldalát érintő logika: a jelszókérő "kapu" (gate)
- * megjelenítése, a REST API és a bejelentkezési felület zárolása,
- * szelektív REST API engedélyezés (Jetpack stb.), "Jegyezz meg" funkció.
+ * megjelenítése, a REST API és a bejelentkezési felület zárolása.
  *
  * @package Mesterjelszo
  */
@@ -65,6 +64,17 @@ class Mesterjelszo_Public {
 	public function maybe_gate(): void {
 		// Ütemezett (cron) feladatok soha ne akadjanak el a zár miatt.
 		if ( function_exists( 'wp_doing_cron' ) && wp_doing_cron() ) {
+			return;
+		}
+
+		// Az XML-RPC (xmlrpc.php) végpontot szándékosan mindig átengedjük.
+		// Ezen keresztül kommunikál számos külső integráció (pl. a Jetpack
+		// kapcsolat- és szinkronizációs mechanizmusának egy része, mobil
+		// alkalmazások, remote publishing eszközök), amelyeknek megvan a
+		// saját, aláírás- vagy hitelesítő adat alapú védelmük - ha ezt a
+		// végpontot is zárolnánk, ezek a szolgáltatások "a weboldal nem
+		// elérhető" jellegű hibával állnának le.
+		if ( defined( 'XMLRPC_REQUEST' ) && XMLRPC_REQUEST ) {
 			return;
 		}
 
@@ -148,42 +158,8 @@ class Mesterjelszo_Public {
 	}
 
 	/**
-	 * Megmondja, hogy a jelenlegi REST kérés engedélyezett-e a szelektív
-	 * REST API engedélyezés miatt (pl. Jetpack).
-	 *
-	 * @return bool
-	 */
-	protected function is_rest_request_allowed(): bool {
-		$settings = Mesterjelszo_Admin::get_settings();
-
-		// Ha a REST API engedélyezés kikapcsolt, nem engedélyezünk semmit
-		if ( empty( $settings['rest_api_enabled'] ) ) {
-			return false;
-		}
-
-		if ( empty( $_SERVER['REQUEST_URI'] ) ) {
-			return false;
-		}
-
-		$uri = sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) );
-
-		// Jetpack API végpontok engedélyezése
-		$allowed_patterns = array(
-			'/wp-json/jetpack/',
-		);
-
-		foreach ( $allowed_patterns as $pattern ) {
-			if ( false !== strpos( $uri, $pattern ) ) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
 	 * A REST API kérések védelme szabványos hitelesítési hiba
-	 * visszaadásával, ha a látogató nincs feloldva (és nem engedélyezett).
+	 * visszaadásával, ha a látogató nincs feloldva.
 	 *
 	 * @param mixed $result A szűrőláncban addig felhalmozott eredmény.
 	 * @return mixed
@@ -208,22 +184,111 @@ class Mesterjelszo_Public {
 			return $result;
 		}
 
-		// Ha a szelektív REST API engedélyezés be van kapcsolva, ellenőrizzük
-		if ( ! $this->is_rest_request_allowed() ) {
-			return new WP_Error(
-				'mesterjelszo_rest_locked',
-				__( 'A weboldal jelszóval védett. A REST API jelenleg nem érhető el.', 'mesterjelszo' ),
-				array( 'status' => 401 )
-			);
+		// A Jetpack és a hozzá hasonló, a REST API-ra támaszkodó
+		// szolgáltatások (pl. site health monitorozás, statisztikák,
+		// távoli publikálás) számára az admin felületen megadható
+		// route-prefixek mentesülnek a zárolás alól, mivel ezeknek megvan a
+		// saját, aláírás- vagy token-alapú hitelesítésük - a Mesterjelszó
+		// zárolása szándékosan nem vonatkozik rájuk, különben a szolgáltatás
+		// "a weboldal nem elérhető" hibát adna vissza.
+		$current_route = $this->get_current_rest_route();
+
+		if ( $this->is_rest_route_exempt( $current_route ) ) {
+			return $result;
 		}
 
-		return $result;
+		return new WP_Error(
+			'mesterjelszo_rest_locked',
+			__( 'A weboldal jelszóval védett. A REST API jelenleg nem érhető el.', 'mesterjelszo' ),
+			array( 'status' => 401 )
+		);
+	}
+
+	/**
+	 * A jelenlegi kérés REST API route-jának megállapítása. Az
+	 * 'rest_authentication_errors' szűrő nem kapja meg a WP_REST_Request
+	 * objektumot, ezért a route-ot közvetlenül a kérés URL-jéből (vagy csúf
+	 * permalink esetén a rest_route query paraméterből) állapítjuk meg.
+	 *
+	 * @return string A route "/" -al kezdődő formában (pl. "/jetpack/v4/connection"), vagy üres string, ha nem állapítható meg.
+	 */
+	protected function get_current_rest_route(): string {
+		if ( ! empty( $_GET['rest_route'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$raw = sanitize_text_field( wp_unslash( $_GET['rest_route'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return '/' . ltrim( $raw, '/' );
+		}
+
+		if ( empty( $_SERVER['REQUEST_URI'] ) ) {
+			return '';
+		}
+
+		$uri  = sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) );
+		$path = wp_parse_url( $uri, PHP_URL_PATH );
+
+		if ( ! $path ) {
+			return '';
+		}
+
+		$needle = '/' . trailingslashit( rest_get_url_prefix() );
+		$pos    = strpos( $path, $needle );
+
+		if ( false === $pos ) {
+			return '';
+		}
+
+		$route = substr( $path, $pos + strlen( $needle ) );
+
+		return '/' . ltrim( (string) $route, '/' );
+	}
+
+	/**
+	 * Megmondja, hogy a megadott REST route szerepel-e az admin felületen
+	 * beállított kivétel-listán (prefix-egyezés alapján).
+	 *
+	 * @param string $route A vizsgálandó route.
+	 * @return bool
+	 */
+	protected function is_rest_route_exempt( string $route ): bool {
+		if ( '' === $route ) {
+			return false;
+		}
+
+		$route = ltrim( $route, '/' );
+
+		foreach ( $this->get_rest_exceptions() as $prefix ) {
+			if ( '' !== $prefix && 0 === strpos( $route, $prefix ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Az admin felületen beállított REST API kivétel-prefixek listája,
+	 * soronkénti tárolásból tömbbé alakítva.
+	 *
+	 * @return string[]
+	 */
+	protected function get_rest_exceptions(): array {
+		$settings = Mesterjelszo_Admin::get_settings();
+		$raw      = isset( $settings['rest_api_exceptions'] ) ? (string) $settings['rest_api_exceptions'] : '';
+
+		$lines = preg_split( '/[\r\n]+/', $raw );
+		$lines = array_map( 'trim', (array) $lines );
+		$lines = array_map(
+			static function ( $line ) {
+				return ltrim( $line, '/' );
+			},
+			$lines
+		);
+
+		return array_values( array_filter( $lines ) );
 	}
 
 	/**
 	 * A jelszó-ellenőrző AJAX végpont. Nonce-t és brute-force limitet
 	 * ellenőriz, sikeres jelszó esetén munkamenetet hoz létre.
-	 * Támogatja a "Jegyezz meg" funkcionalitást.
 	 *
 	 * @return void
 	 */
@@ -254,11 +319,8 @@ class Mesterjelszo_Public {
 		if ( $this->security->verify_password( $password ) ) {
 			$this->security->reset_attempts();
 
-			// Ellenőrizzük, hogy bejelölt-e "Jegyezz meg"
-			$remember_me = isset( $_POST['mesterjelszo_remember_me'] ) && 
-							'1' === sanitize_text_field( wp_unslash( $_POST['mesterjelszo_remember_me'] ) );
-
-			$this->security->create_session( $remember_me );
+			$remember = ! empty( $_POST['remember_me'] );
+			$this->security->create_session( $remember );
 
 			$redirect = isset( $_POST['redirect_to'] )
 				? esc_url_raw( wp_unslash( $_POST['redirect_to'] ) )
