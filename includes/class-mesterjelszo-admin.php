@@ -49,6 +49,7 @@ class Mesterjelszo_Admin {
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_action( 'admin_notices', array( $this, 'maybe_show_missing_password_notice' ) );
+		add_action( 'wp_ajax_mesterjelszo_reveal_password', array( $this, 'ajax_reveal_password' ) );
 		add_filter(
 			'plugin_action_links_' . plugin_basename( MESTERJELSZO_PLUGIN_FILE ),
 			array( $this, 'add_settings_link' )
@@ -62,25 +63,24 @@ class Mesterjelszo_Admin {
 	 */
 	public static function get_default_settings(): array {
 		return array(
-			'enabled'                => true,
-			'logo_id'                => 0,
-			'show_site_name'         => true,
-			'message'                => __( 'Ez a weboldal jelszóval védett. Kérjük, add meg a hozzáférési jelszót a tartalom megtekintéséhez.', 'mesterjelszo' ),
-			'bg_type'                => 'color',
-			'bg_color'               => '#1a1c2c',
-			'bg_image_id'            => 0,
-			'bg_opacity'             => 100,
-			'color_mode'             => 'dark',
-			'accent_color'           => '#6c5ce7',
-			'text_color'             => '#ffffff',
-			'session_duration'       => 24,
-			'max_attempts'           => 5,
-			'lockout_duration'       => 15,
-			'bypass_admins'          => true,
-			'show_password'          => false,
-			'remember_me_enabled'    => false,
-			'remember_me_days'       => 15,
-			'rest_api_enabled'       => false,
+			'enabled'              => true,
+			'logo_id'              => 0,
+			'show_site_name'       => true,
+			'message'              => __( 'Ez a weboldal jelszóval védett. Kérjük, add meg a hozzáférési jelszót a tartalom megtekintéséhez.', 'mesterjelszo' ),
+			'bg_type'              => 'color',
+			'bg_color'             => '#1a1c2c',
+			'bg_image_id'          => 0,
+			'bg_opacity'           => 100,
+			'color_mode'           => 'dark',
+			'accent_color'         => '#6c5ce7',
+			'text_color'           => '#ffffff',
+			'session_duration'     => 24,
+			'max_attempts'         => 5,
+			'lockout_duration'     => 15,
+			'bypass_admins'        => true,
+			'remember_me_enabled'  => false,
+			'remember_me_days'     => 15,
+			'rest_api_exceptions'  => "jetpack/v4\njetpack-blogs/1.1",
 		);
 	}
 
@@ -229,15 +229,34 @@ class Mesterjelszo_Admin {
 
 		$output['bypass_admins'] = ! empty( $input['bypass_admins'] );
 
-		// 1.0.1 új beállítások
-		$output['show_password']       = ! empty( $input['show_password'] );
 		$output['remember_me_enabled'] = ! empty( $input['remember_me_enabled'] );
 
 		$output['remember_me_days'] = isset( $input['remember_me_days'] )
-			? max( 1, absint( $input['remember_me_days'] ) )
+			? min( 365, max( 1, absint( $input['remember_me_days'] ) ) )
 			: $defaults['remember_me_days'];
 
-		$output['rest_api_enabled'] = ! empty( $input['rest_api_enabled'] );
+		// A REST API kivétel-lista soronként egy route-prefixet tartalmaz
+		// (pl. "jetpack/v4"). Csak a route-azonosítókban érvényes
+		// karaktereket engedjük meg, minden mást eltávolítunk.
+		$raw_exceptions = isset( $input['rest_api_exceptions'] )
+			? (string) wp_unslash( $input['rest_api_exceptions'] )
+			: $defaults['rest_api_exceptions'];
+
+		$exception_lines  = preg_split( '/[\r\n]+/', $raw_exceptions );
+		$clean_exceptions = array();
+
+		foreach ( (array) $exception_lines as $line ) {
+			$line = trim( $line );
+			if ( '' === $line ) {
+				continue;
+			}
+			$line = preg_replace( '/[^a-zA-Z0-9\-_\/\.]/', '', $line );
+			if ( '' !== $line ) {
+				$clean_exceptions[] = $line;
+			}
+		}
+
+		$output['rest_api_exceptions'] = implode( "\n", $clean_exceptions );
 
 		// A mesterjelszót SZÁNDÉKOSAN nem a $input tömbön keresztül,
 		// hanem külön $_POST mezőkből dolgozzuk fel, mert ez a mező soha
@@ -338,17 +357,53 @@ class Mesterjelszo_Admin {
 			'mesterjelszo-admin',
 			'mesterjelszoAdmin',
 			array(
-				'mediaTitle'          => __( 'Kép kiválasztása', 'mesterjelszo' ),
-				'mediaButton'         => __( 'Kiválasztás', 'mesterjelszo' ),
-				'confirmRemove'       => __( 'Biztosan eltávolítod a képet?', 'mesterjelszo' ),
-				'passwordMismatch'    => __( 'A két jelszó nem egyezik meg.', 'mesterjelszo' ),
-				'passwordTooShort'    => __( 'A jelszónak legalább 6 karakter hosszúnak kell lennie.', 'mesterjelszo' ),
-				'showPassword'        => __( 'Megjelenítés', 'mesterjelszo' ),
-				'hidePassword'        => __( 'Elrejtés', 'mesterjelszo' ),
-				'copyPassword'        => __( 'Másolás', 'mesterjelszo' ),
-				'passwordCopied'      => __( 'Jelszó vágólapra másolva!', 'mesterjelszo' ),
+				'mediaTitle'       => __( 'Kép kiválasztása', 'mesterjelszo' ),
+				'mediaButton'      => __( 'Kiválasztás', 'mesterjelszo' ),
+				'confirmRemove'    => __( 'Biztosan eltávolítod a képet?', 'mesterjelszo' ),
+				'passwordMismatch' => __( 'A két jelszó nem egyezik meg.', 'mesterjelszo' ),
+				'passwordTooShort' => __( 'A jelszónak legalább 6 karakter hosszúnak kell lennie.', 'mesterjelszo' ),
+				'showButton'       => __( 'Megtekintés', 'mesterjelszo' ),
+				'hideButton'       => __( 'Elrejtés', 'mesterjelszo' ),
+				'copyButton'       => __( 'Másolás', 'mesterjelszo' ),
+				'copiedButton'     => __( 'Másolva!', 'mesterjelszo' ),
+				'genericError'     => __( 'Hiba történt, kérjük próbáld újra.', 'mesterjelszo' ),
+				'networkError'     => __( 'Hálózati hiba történt.', 'mesterjelszo' ),
 			)
 		);
+	}
+
+	/**
+	 * AJAX végpont: a jelenlegi mesterjelszó visszafejtett formában való
+	 * lekérdezése, hogy más adminisztrátorok is nyomon tudják követni a
+	 * beállított jelszót anélkül, hogy azt újra be kellene állítaniuk.
+	 *
+	 * Kizárólag manage_options jogosultsággal rendelkező, hitelesített
+	 * felhasználók számára érhető el, dedikált nonce-cal védve.
+	 *
+	 * @return void
+	 */
+	public function ajax_reveal_password(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error(
+				array( 'message' => __( 'Nincs jogosultságod ehhez a művelethez.', 'mesterjelszo' ) ),
+				403
+			);
+		}
+
+		check_ajax_referer( 'mesterjelszo_reveal_password', 'nonce' );
+
+		$plaintext = $this->security->get_current_password_plaintext();
+
+		if ( '' === $plaintext ) {
+			wp_send_json_error(
+				array(
+					'message' => __( 'A jelenlegi mesterjelszó nem jeleníthető meg. Ez akkor fordulhat elő, ha még nincs jelszó beállítva, a jelszót egy korábbi bővítményverzióban állították be, vagy a szerveren nem érhető el a szükséges OpenSSL bővítmény.', 'mesterjelszo' ),
+				),
+				404
+			);
+		}
+
+		wp_send_json_success( array( 'password' => $plaintext ) );
 	}
 
 	/**
