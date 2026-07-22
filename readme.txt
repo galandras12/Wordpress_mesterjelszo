@@ -65,9 +65,6 @@ Az xmlrpc.php végpont mindig automatikusan mentesül a zárolás alól. A REST 
 
 == Changelog ==
 
-= 1.0.2 =
-* FIX: Több népszerű Login pluginnal együttműködve hiba léphet fel ami javításra került.
-
 = 1.0.1 =
 * Új: a mesterjelszó admin felületen megtekinthető, hogy más adminisztrátorok is nyomon tudják követni.
 * Új: opcionális "Emlékezz rám" funkció, alapértelmezetten 15 napos munkamenettel (alapból kikapcsolva).

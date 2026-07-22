@@ -5,11 +5,6 @@ Ez a fájl a bővítmény összes érdemi változását részletesen dokumentál
 verziónként. A readme.txt "Changelog" szekciója ennek csak rövid,
 összefoglaló kivonatát tartalmazza.
 
-## [1.0.2]
-
-### HOTFIX
-
-- **Egyes szolgáltatások használatakor egyes oldalakon túlterhelődött a login felület a több különböző ugyan azon célre szolgáló pluginok használatával ami javításra szorult mivel az oldal addig használhatatlannak bizonyul. Bizonyos a hibát okozó oldalon használt pluginokkal együttes kompatibilitásra alkalmazva.
 
 ## [1.0.1]
 
