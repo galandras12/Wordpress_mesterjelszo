@@ -15,6 +15,8 @@
 		initPasswordToggle();
 		initPasswordMatchValidation();
 		initLivePreview();
+		initRevealPassword();
+		initRememberMeToggle();
 	});
 
 	/**
@@ -266,6 +268,107 @@
 
 		var messageText = $('#mjz-message').val() || '';
 		$message.text(messageText.replace(/<[^>]*>/g, ''));
+	}
+
+	/**
+	 * A "Jelenlegi mesterjelszó" megtekintés/elrejtés és másolás gombjainak
+	 * bekötése. A tényleges jelszót csak a gombra kattintáskor, egy
+	 * nonce-cal védett, manage_options jogosultságot igénylő AJAX kérésen
+	 * keresztül kérjük le - így az nem szerepel eleve a HTML forráskódban.
+	 */
+	function initRevealPassword() {
+		var $button = $('#mjz-reveal-password');
+		var $display = $('#mjz-current-password-display');
+		var $copyButton = $('#mjz-copy-password');
+
+		if (!$button.length) {
+			return;
+		}
+
+		var revealed = false;
+		var actualValue = '';
+		var strings = window.mesterjelszoAdmin || {};
+
+		function setMasked() {
+			$display.val('••••••••••••');
+			$button.text(strings.showButton || 'Megtekintés');
+			$copyButton.hide();
+			revealed = false;
+			actualValue = '';
+		}
+
+		$button.on('click', function () {
+			if (revealed) {
+				setMasked();
+				return;
+			}
+
+			var nonce = $button.data('nonce');
+			$button.prop('disabled', true);
+
+			$.post(ajaxurl, {
+				action: 'mesterjelszo_reveal_password',
+				nonce: nonce
+			})
+				.done(function (response) {
+					$button.prop('disabled', false);
+
+					if (response && response.success && response.data && response.data.password) {
+						actualValue = response.data.password;
+						$display.val(actualValue);
+						$button.text(strings.hideButton || 'Elrejtés');
+						$copyButton.show();
+						revealed = true;
+					} else {
+						var msg = (response && response.data && response.data.message) || strings.genericError || 'Hiba történt.';
+						window.alert(msg);
+					}
+				})
+				.fail(function () {
+					$button.prop('disabled', false);
+					window.alert(strings.networkError || 'Hálózati hiba történt.');
+				});
+		});
+
+		$copyButton.on('click', function () {
+			if (!actualValue) {
+				return;
+			}
+
+			if (navigator.clipboard && navigator.clipboard.writeText) {
+				navigator.clipboard.writeText(actualValue);
+			} else {
+				$display.trigger('select');
+				document.execCommand('copy');
+			}
+
+			var original = $copyButton.text();
+			$copyButton.text(strings.copiedButton || 'Másolva!');
+			setTimeout(function () {
+				$copyButton.text(original);
+			}, 1500);
+		});
+	}
+
+	/**
+	 * Az "Emlékezz rám" napok mezőjének vizuális ki/bekapcsolása attól
+	 * függően, hogy a funkció engedélyezve van-e - a mentés szerver oldalon
+	 * mindig a checkbox tényleges állapotát veszi figyelembe, ez csak UX.
+	 */
+	function initRememberMeToggle() {
+		var $checkbox = $('#mjz-remember-me-enabled');
+		var $daysField = $('#mjz-remember-me-days-field');
+
+		if (!$checkbox.length) {
+			return;
+		}
+
+		function refresh() {
+			$daysField.toggleClass('is-disabled', !$checkbox.is(':checked'));
+		}
+
+		$checkbox.on('change', refresh);
+		refresh();
 	}
 
 	/**
