@@ -165,6 +165,21 @@ $opacity_value = max( 0, min( 100, (int) $settings['bg_opacity'] ) ) / 100;
 
 					<div id="mjz-error" class="mjz-error" role="alert" aria-live="polite" hidden></div>
 
+					<?php if ( ! empty( $settings['remember_me_enabled'] ) ) : ?>
+						<label class="mjz-remember-row">
+							<input type="checkbox" id="mjz-remember" name="remember_me" value="1">
+							<span>
+								<?php
+								printf(
+									/* translators: %d: napok száma */
+									esc_html__( 'Emlékezz rám %d napig ezen az eszközön', 'mesterjelszo' ),
+									(int) $settings['remember_me_days']
+								);
+								?>
+							</span>
+						</label>
+					<?php endif; ?>
+
 					<button type="submit" id="mjz-submit" class="mjz-submit">
 						<span class="mjz-spinner" id="mjz-spinner" hidden aria-hidden="true"></span>
 						<span class="mjz-submit-text"><?php esc_html_e( 'Belépés', 'mesterjelszo' ); ?></span>
