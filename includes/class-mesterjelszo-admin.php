@@ -47,12 +47,44 @@ class Mesterjelszo_Admin {
 	public function init(): void {
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
+		add_action( 'admin_init', array( $this, 'maybe_handle_log_actions' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_action( 'admin_notices', array( $this, 'maybe_show_missing_password_notice' ) );
 		add_action( 'wp_ajax_mesterjelszo_reveal_password', array( $this, 'ajax_reveal_password' ) );
 		add_filter(
 			'plugin_action_links_' . plugin_basename( MESTERJELSZO_PLUGIN_FILE ),
 			array( $this, 'add_settings_link' )
+		);
+	}
+
+	/**
+	 * A "Napló törlése" gomb beküldésének kezelése (a beállítási oldalon
+	 * elhelyezett, a fő beállítás-formtól független külön formból érkezik).
+	 *
+	 * @return void
+	 */
+	public function maybe_handle_log_actions(): void {
+		if ( empty( $_POST['mesterjelszo_clear_log'] ) ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		check_admin_referer( 'mesterjelszo_clear_log_action', 'mesterjelszo_clear_log_nonce' );
+
+		if ( class_exists( 'Mesterjelszo_Login_Log' ) ) {
+			Mesterjelszo_Login_Log::clear_log();
+		}
+
+		add_action(
+			'admin_notices',
+			function () {
+				echo '<div class="notice notice-success is-dismissible"><p>' .
+					esc_html__( 'A bejelentkezési napló törölve lett.', 'mesterjelszo' ) .
+					'</p></div>';
+			}
 		);
 	}
 
@@ -81,6 +113,10 @@ class Mesterjelszo_Admin {
 			'remember_me_enabled'  => false,
 			'remember_me_days'     => 15,
 			'rest_api_exceptions'  => "jetpack/v4\njetpack-blogs/1.1",
+			'ajax_action_exceptions' => '',
+			'use_503_status'       => false,
+			'trusted_ips_enabled'  => false,
+			'trusted_ips'          => '',
 		);
 	}
 
@@ -258,6 +294,56 @@ class Mesterjelszo_Admin {
 
 		$output['rest_api_exceptions'] = implode( "\n", $clean_exceptions );
 
+		// AJAX action-név kivételek, ugyanazzal a logikával, mint a REST
+		// kivételek - más bővítmények (pl. nagy fájlfeltöltő) saját
+		// admin-ajax.php végpontjainak kompatibilitásához.
+		$raw_ajax_exceptions = isset( $input['ajax_action_exceptions'] )
+			? (string) wp_unslash( $input['ajax_action_exceptions'] )
+			: $defaults['ajax_action_exceptions'];
+
+		$ajax_lines  = preg_split( '/[\r\n]+/', $raw_ajax_exceptions );
+		$clean_ajax  = array();
+
+		foreach ( (array) $ajax_lines as $line ) {
+			$line = trim( $line );
+			if ( '' === $line ) {
+				continue;
+			}
+			$line = preg_replace( '/[^a-zA-Z0-9\-_]/', '', $line );
+			if ( '' !== $line ) {
+				$clean_ajax[] = $line;
+			}
+		}
+
+		$output['ajax_action_exceptions'] = implode( "\n", $clean_ajax );
+
+		// 503-as HTTP állapotkód használata a jelszókérő oldalon -
+		// alapértelmezetten kikapcsolva (lásd 1.0.2 hotfix megjegyzés).
+		$output['use_503_status'] = ! empty( $input['use_503_status'] );
+
+		$output['trusted_ips_enabled'] = ! empty( $input['trusted_ips_enabled'] );
+
+		$raw_trusted_ips = isset( $input['trusted_ips'] )
+			? (string) wp_unslash( $input['trusted_ips'] )
+			: $defaults['trusted_ips'];
+
+		$trusted_lines = preg_split( '/[\r\n]+/', $raw_trusted_ips );
+		$clean_trusted = array();
+
+		foreach ( (array) $trusted_lines as $line ) {
+			$line = trim( $line );
+			if ( '' === $line ) {
+				continue;
+			}
+			// Csak az IPv4/IPv6 karakterek és a CIDR perjel engedélyezett.
+			$line = preg_replace( '/[^0-9a-fA-F:.\/]/', '', $line );
+			if ( '' !== $line ) {
+				$clean_trusted[] = $line;
+			}
+		}
+
+		$output['trusted_ips'] = implode( "\n", $clean_trusted );
+
 		// A mesterjelszót SZÁNDÉKOSAN nem a $input tömbön keresztül,
 		// hanem külön $_POST mezőkből dolgozzuk fel, mert ez a mező soha
 		// nem kerülhet be nyílt szövegként a mesterjelszo_settings option
@@ -415,6 +501,10 @@ class Mesterjelszo_Admin {
 	public function render_settings_page(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( esc_html__( 'Nincs jogosultságod ehhez az oldalhoz.', 'mesterjelszo' ) );
+		}
+
+		if ( class_exists( 'Mesterjelszo_Login_Log' ) ) {
+			Mesterjelszo_Login_Log::backfill_geo_data( 10 );
 		}
 
 		$settings     = self::get_settings();

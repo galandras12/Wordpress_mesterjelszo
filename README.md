@@ -4,7 +4,7 @@
 
 **Védd egyetlen jelszóval a teljes WordPress weboldalt — oldalak, bejegyzések, egyedi tartalomtípusok, a REST API és a bejelentkezési felület.**
 
-[![Version](https://img.shields.io/badge/version-1.0.2-6c5ce7?style=for-the-badge)](changelog.txt)
+[![Version](https://img.shields.io/badge/version-1.0.3-6c5ce7?style=for-the-badge)](changelog.txt)
 [![WordPress](https://img.shields.io/badge/WordPress-6.4%2B-21759b?style=for-the-badge&logo=wordpress&logoColor=white)](https://wordpress.org)
 [![Tested](https://img.shields.io/badge/tested%20up%20to-7.0.1-46b450?style=for-the-badge)](changelog.txt)
 [![PHP](https://img.shields.io/badge/PHP-8.0%2B-777bb4?style=for-the-badge&logo=php&logoColor=white)](https://www.php.net)
@@ -297,6 +297,7 @@ Rövid összefoglaló — a teljes, részletes napló a **[changelog.txt](change
 
 | Verzió | Típus | Összefoglaló |
 |---|---|---|
+| **1.0.3** | 🔥 Hotfix | Admin fülek kattintás-hiba javítva (natív JS), vörös hibajelzés + remegés animáció rontott jelszónál |
 | **1.0.2** | 🔥 Hotfix | 503 → 200 alapértelmezett válasz, bejelentkezési napló, megbízható IP-k, AJAX kivételek |
 | **1.0.1** | ✨ Funkció | Jelszó-megtekintés, "Emlékezz rám", Jetpack/REST/XML-RPC kompatibilitás |
 | **1.0.0** | 🎉 Kiadás | Első nyilvános verzió |

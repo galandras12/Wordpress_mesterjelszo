@@ -28,6 +28,8 @@ body.mjz-body {
 	--mjz-input-bg: rgba(255, 255, 255, 0.08);
 	--mjz-input-border: rgba(255, 255, 255, 0.25);
 	--mjz-muted: rgba(255, 255, 255, 0.65);
+	--mjz-error: #ff6b6b;
+	--mjz-error-glow: rgba(255, 107, 107, 0.28);
 }
 
 body.mjz-light {
@@ -36,6 +38,8 @@ body.mjz-light {
 	--mjz-input-bg: rgba(20, 20, 30, 0.04);
 	--mjz-input-border: rgba(20, 20, 30, 0.18);
 	--mjz-muted: rgba(20, 20, 30, 0.6);
+	--mjz-error: #dc2626;
+	--mjz-error-glow: rgba(220, 38, 38, 0.18);
 }
 
 @media (prefers-color-scheme: light) {
@@ -45,6 +49,8 @@ body.mjz-light {
 		--mjz-input-bg: rgba(20, 20, 30, 0.04);
 		--mjz-input-border: rgba(20, 20, 30, 0.18);
 		--mjz-muted: rgba(20, 20, 30, 0.6);
+		--mjz-error: #dc2626;
+		--mjz-error-glow: rgba(220, 38, 38, 0.18);
 	}
 }
 
@@ -190,7 +196,40 @@ body.mjz-light .mjz-bg-layer {
 }
 
 .mjz-input[aria-invalid="true"] {
-	border-color: #e74c3c;
+	border-color: var(--mjz-error);
+	box-shadow: 0 0 0 3px var(--mjz-error-glow);
+}
+
+/* Remegés animáció - jól láthatóan jelzi a hibás jelszó-próbálkozást,
+   mind világos, mind sötét témán, a fenti --mjz-error szín mellett. */
+@keyframes mjz-shake {
+	10%,
+	90% {
+		transform: translateX(-1px);
+	}
+	20%,
+	80% {
+		transform: translateX(2px);
+	}
+	30%,
+	50%,
+	70% {
+		transform: translateX(-4px);
+	}
+	40%,
+	60% {
+		transform: translateX(4px);
+	}
+}
+
+.mjz-shake {
+	animation: mjz-shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.mjz-shake {
+		animation: none;
+	}
 }
 
 .mjz-toggle-visibility {
@@ -289,6 +328,13 @@ body.mjz-light .mjz-bg-layer {
 .mjz-submit:disabled {
 	opacity: 0.7;
 	cursor: not-allowed;
+}
+
+/* Hibaállapot: jól látható, mindkét témán olvasható vörös keret a gombon,
+   hogy a jelszó elrontása a mezőn kívül, a gombon is jelezve legyen. */
+.mjz-submit.mjz-error-state {
+	border: 2px solid var(--mjz-error);
+	box-shadow: 0 0 0 3px var(--mjz-error-glow);
 }
 
 .mjz-spinner {

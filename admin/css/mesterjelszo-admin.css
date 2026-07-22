@@ -305,6 +305,74 @@
 	pointer-events: none;
 }
 
+/* ---------- Napló statisztika-dobozok ---------- */
+
+.mjz-stat-grid {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 14px;
+}
+
+@media (max-width: 700px) {
+	.mjz-stat-grid {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+.mjz-stat-box {
+	background: #f7f7fb;
+	border-radius: 12px;
+	padding: 16px;
+	text-align: center;
+}
+
+.mjz-stat-value {
+	display: block;
+	font-size: 1.8rem;
+	font-weight: 800;
+	color: #6c5ce7;
+}
+
+.mjz-stat-label {
+	display: block;
+	font-size: 0.8rem;
+	color: #6b7280;
+	margin-top: 4px;
+}
+
+/* ---------- Napló táblázat ---------- */
+
+.mjz-log-table-wrap {
+	overflow-x: auto;
+	margin-bottom: 14px;
+	border: 1px solid #eaeaef;
+	border-radius: 10px;
+}
+
+.mjz-log-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.87rem;
+}
+
+.mjz-log-table th,
+.mjz-log-table td {
+	text-align: left;
+	padding: 9px 12px;
+	border-bottom: 1px solid #eaeaef;
+	white-space: nowrap;
+}
+
+.mjz-log-table tbody tr:last-child td {
+	border-bottom: none;
+}
+
+.mjz-log-table th {
+	color: #50575e;
+	font-weight: 700;
+	background: #f7f7fb;
+}
+
 /* ---------- Kapcsolók (toggle switch) ---------- */
 
 .mjz-switch-row {

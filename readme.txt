@@ -4,7 +4,7 @@ Tags: password protection, security, maintenance mode, coming soon, access contr
 Requires at least: 6.4
 Tested up to: 7.0.1
 Requires PHP: 8.0
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -72,6 +72,11 @@ Ez egy ismert, 1.0.2-ben javított probléma volt: a bővítmény korábban mind
 Kizárólag manage_options jogosultsággal rendelkező adminisztrátorok. A napló a sikertelen mesterjelszó-próbálkozások valódi IP-címét, valamint a hozzá tartozó (külső szolgáltatáson keresztül lekérdezett) ország/város adatokat tárolja, legfeljebb 1 évig. Ez eltér a plugin többi részének anonimizált IP-kezelésétől - ha ezt a funkciót használod, érdemes megemlítened a weboldalad adatkezelési tájékoztatójában.
 
 == Changelog ==
+
+= 1.0.3 =
+* HOTFIX: az admin felület "Megjelenés", "Biztonság" és "Bejelentkezési napló" fülei nem nyíltak meg kattintásra (csak a hover-állapot látszott) egyes bővítmény-kombinációk mellett. A tab-váltás mostantól egy önálló, más szkriptek hibáitól teljesen független natív JavaScript kódra épül.
+* Új: jól látható, világos és sötét témán egyaránt olvasható vörös hibajelzés (bekeretezett mező és gomb) hibás jelszó megadásakor a jelszókérő felületen.
+* Új: a jelszómező finoman megremeg hibás próbálkozáskor, jól látható visszajelzésként.
 
 = 1.0.2 =
 * HOTFIX: a jelszókérő oldal alapértelmezetten HTTP 200-as választ küld a korábbi, mindig kötelező 503 helyett, mivel egyes tárhelyek/CDN-ek/biztonsági bővítmények a 503-at saját hibaoldallal helyettesítették, ami a teljes weboldalt (a bejelentkezési felülettel együtt) elérhetetlenné tette. A 503 opcionálisan visszakapcsolható.

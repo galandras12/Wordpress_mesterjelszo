@@ -95,6 +95,14 @@ class Mesterjelszo_Public {
 			return;
 		}
 
+		// Az admin felületen megadott, más bővítményekhez tartozó AJAX
+		// action-kivételek (pl. nagy fájlfeltöltő bővítmény) - ezek nélkül
+		// az adott bővítmény látogatói oldali AJAX funkciója zárolt
+		// állapotban nem működne.
+		if ( $doing_ajax && '' !== $ajax_action && in_array( $ajax_action, $this->get_ajax_action_exceptions(), true ) ) {
+			return;
+		}
+
 		$settings = Mesterjelszo_Admin::get_settings();
 
 		// Ha a védelem ki van kapcsolva, vagy még nincs mesterjelszó
@@ -105,6 +113,12 @@ class Mesterjelszo_Public {
 
 		// A látogatónak már van érvényes, feloldott munkamenete.
 		if ( $this->security->is_unlocked() ) {
+			return;
+		}
+
+		// Megbízható IP-címről érkező látogatók (admin felületen
+		// beállítható lista) teljesen átugorják a jelszókérő felületet.
+		if ( $this->security->is_trusted_ip() ) {
 			return;
 		}
 
@@ -181,6 +195,10 @@ class Mesterjelszo_Public {
 		}
 
 		if ( ! empty( $settings['bypass_admins'] ) && is_user_logged_in() && current_user_can( 'manage_options' ) ) {
+			return $result;
+		}
+
+		if ( $this->security->is_trusted_ip() ) {
 			return $result;
 		}
 
@@ -287,6 +305,22 @@ class Mesterjelszo_Public {
 	}
 
 	/**
+	 * Az admin felületen beállított AJAX action-név kivételek listája,
+	 * soronkénti tárolásból tömbbé alakítva.
+	 *
+	 * @return string[]
+	 */
+	protected function get_ajax_action_exceptions(): array {
+		$settings = Mesterjelszo_Admin::get_settings();
+		$raw      = isset( $settings['ajax_action_exceptions'] ) ? (string) $settings['ajax_action_exceptions'] : '';
+
+		$lines = preg_split( '/[\r\n]+/', $raw );
+		$lines = array_map( 'trim', (array) $lines );
+
+		return array_values( array_filter( $lines ) );
+	}
+
+	/**
 	 * A jelszó-ellenőrző AJAX végpont. Nonce-t és brute-force limitet
 	 * ellenőriz, sikeres jelszó esetén munkamenetet hoz létre.
 	 *
@@ -331,16 +365,30 @@ class Mesterjelszo_Public {
 
 		$this->security->register_failed_attempt();
 
+		if ( class_exists( 'Mesterjelszo_Login_Log' ) ) {
+			Mesterjelszo_Login_Log::record_attempt( $this->security->get_client_ip() );
+		}
+
 		wp_send_json_error( array( 'message' => __( 'Hibás jelszó. Kérjük, próbáld újra.', 'mesterjelszo' ) ), 403 );
 	}
 
 	/**
 	 * A jelszókérő felület kirenderelése és a kérés leállítása.
 	 *
-	 * A választ nocache fejlécekkel és 503-as státuszkóddal (a szabványos
-	 * "ideiglenesen nem elérhető" HTTP állapottal, Retry-After fejléccel)
-	 * küldjük ki, hogy a keresőmotorok ne indexeljék a jelszókérő oldalt a
-	 * ténylegesen mögötte lévő tartalom helyett.
+	 * 1.0.2 HOTFIX: korábban ez a metódus MINDIG valódi HTTP 503-as
+	 * állapotkódot küldött (SEO-megfontolásból: hogy a keresőmotorok ne
+	 * indexeljék a jelszókérő oldalt). Ez azonban több tárhelyi
+	 * környezetben (pl. bizonyos CDN-ek, LiteSpeed Cache, vagy a Wordfence
+	 * néhány konfigurációja) azt eredményezte, hogy a szolgáltató a saját,
+	 * márkázott hibaoldalával helyettesítette a válaszunkat - emiatt a
+	 * teljes weboldal, a bejelentkezési felülettel együtt, teljesen
+	 * elérhetetlenné vált a jelszókérő felület helyett.
+	 *
+	 * Emiatt mostantól ALAPÉRTELMEZETTEN sima HTTP 200-as választ küldünk
+	 * (a keresőmotoros indexelést a <meta name="robots" content="noindex">
+	 * címke és az X-Robots-Tag fejléc önmagában is megakadályozza), a
+	 * 503-as állapotkód pedig egy admin felületen kikapcsolható speciális
+	 * beállítás lett (Biztonság fül → "503-as HTTP állapotkód küldése").
 	 *
 	 * @return void
 	 */
@@ -350,8 +398,13 @@ class Mesterjelszo_Public {
 		nocache_headers();
 
 		if ( ! headers_sent() ) {
-			header( 'HTTP/1.1 503 Service Temporarily Unavailable' );
-			header( 'Retry-After: 3600' );
+			if ( ! empty( $settings['use_503_status'] ) ) {
+				header( 'HTTP/1.1 503 Service Temporarily Unavailable' );
+				header( 'Retry-After: 3600' );
+			}
+			// A keresőmotoros indexelés megakadályozása 200-as válasz
+			// mellett is működik ezzel a fejléccel, illetve a gate-page.php
+			// <meta name="robots"> címkéjével.
 			header( 'X-Robots-Tag: noindex, nofollow', true );
 		}
 

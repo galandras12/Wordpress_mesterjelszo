@@ -186,13 +186,14 @@ class Mesterjelszo_Security {
 	}
 
 	/**
-	 * Kliens IP címének lekérése kizárólag ideiglenes, futásidejű
-	 * felhasználásra (rate limiting kulcs generálásához) - az IP-t magát
-	 * soha nem tároljuk el.
+	 * Kliens IP címének lekérése. Elsődlegesen a próbálkozás-korlátozáshoz
+	 * (rate limiting) és a megbízható IP-lista ellenőrzéséhez használjuk;
+	 * a bejelentkezési napló (Mesterjelszo_Login_Log) is ezt hívja, hogy
+	 * mindenhol egységes legyen az IP-cím meghatározásának logikája.
 	 *
 	 * @return string
 	 */
-	protected function get_client_ip(): string {
+	public function get_client_ip(): string {
 		$headers = array( 'HTTP_CF_CONNECTING_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR' );
 
 		foreach ( $headers as $header ) {
@@ -206,6 +207,79 @@ class Mesterjelszo_Security {
 		}
 
 		return '0.0.0.0';
+	}
+
+	/**
+	 * Megmondja, hogy a jelenlegi látogató IP-címe szerepel-e az admin
+	 * felületen beállított, megbízható IP-címek listáján. Ha igen, a
+	 * látogató teljesen átugorhatja a jelszókérő felületet.
+	 *
+	 * @return bool
+	 */
+	public function is_trusted_ip(): bool {
+		$settings = Mesterjelszo_Admin::get_settings();
+
+		if ( empty( $settings['trusted_ips_enabled'] ) || empty( $settings['trusted_ips'] ) ) {
+			return false;
+		}
+
+		$ip      = $this->get_client_ip();
+		$entries = preg_split( '/[\r\n]+/', (string) $settings['trusted_ips'] );
+
+		foreach ( (array) $entries as $entry ) {
+			$entry = trim( $entry );
+			if ( '' === $entry ) {
+				continue;
+			}
+			if ( $this->ip_matches( $ip, $entry ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Megmondja, hogy egy IP-cím megegyezik-e egy szabállyal - a szabály
+	 * lehet pontos IP-cím, vagy egy egyszerű IPv4 CIDR jelölés
+	 * (pl. "203.0.113.0/24").
+	 *
+	 * @param string $ip    A vizsgálandó, tényleges IP-cím.
+	 * @param string $entry A szabály (pontos IP vagy CIDR).
+	 * @return bool
+	 */
+	protected function ip_matches( string $ip, string $entry ): bool {
+		if ( false === strpos( $entry, '/' ) ) {
+			return $entry === $ip;
+		}
+
+		$parts = explode( '/', $entry, 2 );
+
+		if ( 2 !== count( $parts ) ) {
+			return false;
+		}
+
+		list( $subnet, $mask_bits ) = $parts;
+
+		if (
+			! filter_var( $subnet, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 ) ||
+			! filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 ) ||
+			! ctype_digit( $mask_bits )
+		) {
+			return false; // IPv6 CIDR-t egyszerűsítésként nem támogatunk.
+		}
+
+		$mask_bits = (int) $mask_bits;
+
+		if ( $mask_bits < 0 || $mask_bits > 32 ) {
+			return false;
+		}
+
+		$ip_long     = ip2long( $ip );
+		$subnet_long = ip2long( $subnet );
+		$mask        = ( 0 === $mask_bits ) ? 0 : ( -1 << ( 32 - $mask_bits ) );
+
+		return ( $ip_long & $mask ) === ( $subnet_long & $mask );
 	}
 
 	/**

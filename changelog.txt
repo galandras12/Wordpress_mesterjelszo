@@ -6,6 +6,77 @@ verziónként. A readme.txt "Changelog" szekciója ennek csak rövid,
 összefoglaló kivonatát tartalmazza.
 
 
+## [1.0.3] - HOTFIX
+
+### Kritikus javítás: az admin fülek nem nyíltak meg kattintásra
+
+Több felhasználó jelezte, hogy az admin beállítási oldalon a
+"Megjelenés", "Biztonság" és "Bejelentkezési napló" fülekre kattintva
+semmi nem történt - a hover (rákattintás nélküli egérrel való rámutatás)
+vizuális visszajelzése látszott, de a tényleges tartalom nem váltott át,
+kizárólag az "Alapbeállítások" fül maradt látható és használható.
+
+**Valószínűsíthető ok:** a tab-váltás logikája korábban egy jQuery
+`document.ready` (`jQuery(function(){...})`) callback-en belül futott, a
+plugin saját admin.js fájljában. Ha egy MÁSIK, ugyanazon az admin oldalon
+betöltődő bővítmény szkriptje (a felhasználó esetében számos aktív
+bővítmény - pl. Activity Log, Ultimate Member, Wordfence, Burst
+Statisztika - egyaránt szóba jöhet) hibát dob a saját, szintén
+`document.ready`-re feliratkozó kódjában, az bizonyos körülmények között
+megszakíthatja az UTÁNA regisztrált ready callback-ek lefutását - ez
+pontosan megmagyarázza, hogy a tiszta CSS-alapú hover miért működött
+(nem függ JavaScript-től), miközben a kattintásra történő váltás
+(jQuery-függő JS) miért nem futott le.
+
+**Javítás:** a tab-váltás logikája teljesen kikerült a jQuery-alapú
+admin.js fájlból, és egy önálló, natív (vanilla) JavaScript
+`<script>` blokként került beágyazásra közvetlenül a fülek (`<nav>`)
+HTML kódja mellé, a settings-page.php-ban. Ez a megoldás:
+- nem használ jQuery-t, ezért nem függ attól, hogy a jQuery megfelelően
+  töltődött-e be, vagy hogy más bővítmények hogyan használják;
+- nem egy megosztott `document.ready` eseménysoron keresztül fut, ezért
+  más bővítmények szkript-hibái nem tudják megakasztani;
+- közvetlenül a saját markup-ja mellett helyezkedik el, ezért semmilyen
+  külső fájl betöltési sorrendjétől vagy sikerességétől nem függ.
+
+Ha korábban ezt a problémát tapasztaltad, a frissítés után a fülek
+azonnal, minden további teendő nélkül ismét működnek.
+
+### Új funkciók
+
+- **Vizuális hibajelzés hibás jelszónál (jelszókérő felület)**
+  Hibás mesterjelszó megadásakor a jelszómező és a "Belépés" gomb
+  mostantól jól látható, vörös kerettel (és finom fénykerettel)
+  jelenik meg - a szín mindkét megjelenési módban (világos és sötét)
+  külön hangolt, megfelelő kontrasztú árnyalatra vált (sötét módban
+  világosabb korall-vörös, világos módban telítettebb, sötétebb vörös),
+  hogy mindkét témán jól olvasható és észrevehető legyen.
+
+- **Remegés animáció hibás próbálkozáskor**
+  A jelszómező (a szem-ikon gombbal együtt) egy rövid, finom
+  megremegéssel jelzi a sikertelen próbálkozást, tovább erősítve a
+  vizuális visszajelzést. Az animáció tiszteletben tartja a
+  `prefers-reduced-motion` beállítást (a mozgás-érzékeny felhasználóknál
+  automatikusan kikapcsol).
+
+### Technikai részletek fejlesztőknek
+
+- `admin/js/mesterjelszo-admin.js`: az `initTabs()` függvény és annak
+  hívása eltávolítva.
+- `admin/partials/settings-page.php`: új, önálló `<script>` blokk a
+  `<nav class="mjz-tabs">` után, natív `addEventListener`-alapú
+  tab-váltással, `DOMContentLoaded` védelemmel (ha a script a `<body>`
+  még be nem fejezett betöltése közben fut le).
+- `public/css/mesterjelszo-public.css`: új `--mjz-error` és
+  `--mjz-error-glow` CSS egyéni tulajdonságok, témánként külön értékkel;
+  új `.mjz-shake` kulcsképkocka-animáció; új `.mjz-submit.mjz-error-state`
+  szabály.
+- `public/js/mesterjelszo-public.js`: a `showError()`/`clearError()`
+  függvények kiegészítve a gomb hibaállapot-osztályának kezelésével és
+  egy új `triggerShake()` segédfüggvénnyel (kényszerített reflow-val az
+  animáció megbízható újraindításához ismételt hibáknál is).
+
+
 ## [1.0.2] - HOTFIX
 
 ### Kritikus javítás: teljes weboldal-elérhetetlenség (503 hiba)

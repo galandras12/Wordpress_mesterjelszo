@@ -43,24 +43,94 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 	<?php settings_errors( 'mesterjelszo_settings_group' ); ?>
 
-	<form method="post" action="options.php" id="mjz-settings-form" novalidate>
-		<?php settings_fields( 'mesterjelszo_settings_group' ); ?>
+	<div class="mjz-layout">
 
-		<div class="mjz-layout">
+		<div class="mjz-main-column">
 
-			<div class="mjz-main-column">
+			<nav class="mjz-tabs" role="tablist" aria-label="<?php echo esc_attr__( 'Beállítási kategóriák', 'mesterjelszo' ); ?>">
+				<button type="button" class="mjz-tab is-active" data-tab="general" role="tab" aria-selected="true" id="mjz-tab-btn-general" aria-controls="mjz-tab-general">
+					<span class="dashicons dashicons-admin-network"></span> <?php esc_html_e( 'Alapbeállítások', 'mesterjelszo' ); ?>
+				</button>
+				<button type="button" class="mjz-tab" data-tab="appearance" role="tab" aria-selected="false" id="mjz-tab-btn-appearance" aria-controls="mjz-tab-appearance">
+					<span class="dashicons dashicons-admin-appearance"></span> <?php esc_html_e( 'Megjelenés', 'mesterjelszo' ); ?>
+				</button>
+				<button type="button" class="mjz-tab" data-tab="security" role="tab" aria-selected="false" id="mjz-tab-btn-security" aria-controls="mjz-tab-security">
+					<span class="dashicons dashicons-shield"></span> <?php esc_html_e( 'Biztonság', 'mesterjelszo' ); ?>
+				</button>
+				<button type="button" class="mjz-tab" data-tab="log" role="tab" aria-selected="false" id="mjz-tab-btn-log" aria-controls="mjz-tab-log">
+					<span class="dashicons dashicons-list-view"></span> <?php esc_html_e( 'Bejelentkezési napló', 'mesterjelszo' ); ?>
+				</button>
+			</nav>
 
-				<nav class="mjz-tabs" role="tablist" aria-label="<?php echo esc_attr__( 'Beállítási kategóriák', 'mesterjelszo' ); ?>">
-					<button type="button" class="mjz-tab is-active" data-tab="general" role="tab" aria-selected="true" id="mjz-tab-btn-general" aria-controls="mjz-tab-general">
-						<span class="dashicons dashicons-admin-network"></span> <?php esc_html_e( 'Alapbeállítások', 'mesterjelszo' ); ?>
-					</button>
-					<button type="button" class="mjz-tab" data-tab="appearance" role="tab" aria-selected="false" id="mjz-tab-btn-appearance" aria-controls="mjz-tab-appearance">
-						<span class="dashicons dashicons-admin-appearance"></span> <?php esc_html_e( 'Megjelenés', 'mesterjelszo' ); ?>
-					</button>
-					<button type="button" class="mjz-tab" data-tab="security" role="tab" aria-selected="false" id="mjz-tab-btn-security" aria-controls="mjz-tab-security">
-						<span class="dashicons dashicons-shield"></span> <?php esc_html_e( 'Biztonság', 'mesterjelszo' ); ?>
-					</button>
-				</nav>
+			<script>
+			/*
+			 * Natív (vanilla) JavaScript tab-váltó, SZÁNDÉKOSAN nem jQuery-n
+			 * keresztül, és SZÁNDÉKOSAN nem egy külső, betöltési sorrendtől
+			 * függő fájlban. Ennek oka egy 1.0.3-ban javított hiba: ha egy
+			 * másik, ugyanazon az admin oldalon aktív bővítmény szkriptje
+			 * hibát dob a jQuery(document).ready() eseménysorban, az
+			 * megakaszthatja az utána regisztrált ready callback-eket
+			 * (beleértve a Mesterjelszó admin.js fájlját is) - emiatt a
+			 * fülek hover állapota (tiszta CSS, mindig működik) látszott,
+			 * de a kattintásra történő váltás (a korábbi, jQuery-függő
+			 * megoldás) nem. Ez a beágyazott, közvetlenül a nav mellett
+			 * futó script semmilyen más szkript betöltésétől vagy
+			 * hibájától nem függ, ezért garantáltan mindig működik.
+			 */
+			(function () {
+				'use strict';
+
+				function mjzInitTabs() {
+					var tabs = document.querySelectorAll('.mjz-tab');
+					var panels = document.querySelectorAll('.mjz-tab-panel');
+
+					if (!tabs.length) {
+						return;
+					}
+
+					for (var i = 0; i < tabs.length; i++) {
+						tabs[i].addEventListener('click', function (event) {
+							var target = event.currentTarget.getAttribute('data-tab');
+
+							for (var j = 0; j < tabs.length; j++) {
+								tabs[j].classList.remove('is-active');
+								tabs[j].setAttribute('aria-selected', 'false');
+							}
+							event.currentTarget.classList.add('is-active');
+							event.currentTarget.setAttribute('aria-selected', 'true');
+
+							for (var k = 0; k < panels.length; k++) {
+								panels[k].classList.remove('is-active');
+								panels[k].setAttribute('hidden', 'hidden');
+							}
+
+							var targetPanel = document.getElementById('mjz-tab-' + target);
+							if (targetPanel) {
+								targetPanel.classList.add('is-active');
+								targetPanel.removeAttribute('hidden');
+							}
+						});
+					}
+				}
+
+				if (document.readyState === 'loading') {
+					document.addEventListener('DOMContentLoaded', mjzInitTabs);
+				} else {
+					mjzInitTabs();
+				}
+			})();
+			</script>
+
+			<!--
+				FONTOS: az alábbi <form> KIZÁRÓLAG a tényleges beállítás-mezőket
+				(Alapbeállítások / Megjelenés / Biztonság fülek) tartalmazza. A
+				Napló fülnek szándékosan saját, ezen a formon KÍVÜLI form-ja van
+				(lásd lentebb) - egymásba ágyazott <form> elemek érvénytelen
+				HTML-t eredményeznének, és megtörnék mind a mentést, mind a
+				napló törlését.
+			-->
+			<form method="post" action="options.php" id="mjz-settings-form" novalidate>
+				<?php settings_fields( 'mesterjelszo_settings_group' ); ?>
 
 				<!-- ===================== ALAPBEÁLLÍTÁSOK TAB ===================== -->
 				<section class="mjz-tab-panel is-active" id="mjz-tab-general" role="tabpanel" aria-labelledby="mjz-tab-btn-general">
@@ -320,12 +390,54 @@ if ( ! defined( 'ABSPATH' ) ) {
 						</div>
 					</div>
 
+					<div class="mjz-card-box">
+						<h2><?php esc_html_e( 'Speciális / kompatibilitás', 'mesterjelszo' ); ?></h2>
+
+						<label class="mjz-switch-row">
+							<span class="mjz-switch">
+								<input type="checkbox" name="<?php echo esc_attr( MESTERJELSZO_OPTION_KEY ); ?>[use_503_status]" value="1" <?php checked( ! empty( $settings['use_503_status'] ) ); ?>>
+								<span class="mjz-switch-slider" aria-hidden="true"></span>
+							</span>
+							<span class="mjz-switch-label">
+								<strong><?php esc_html_e( '503-as HTTP állapotkód küldése a jelszókérő oldalon', 'mesterjelszo' ); ?></strong>
+								<span class="mjz-field-description"><?php esc_html_e( 'Alapértelmezetten KIKAPCSOLVA. Egyes tárhelyszolgáltatók, CDN-ek vagy biztonsági bővítmények (pl. Wordfence, LiteSpeed Cache) a saját, márkázott hibaoldalukkal helyettesíthetik az 503-as választ, aminek következtében a teljes weboldal - a bejelentkezési felülettel együtt - teljesen elérhetetlenné válhat a jelszókérő felület helyett. Csak akkor kapcsold be, ha megbizonyosodtál róla, hogy a tárhelyed ezt helyesen kezeli.', 'mesterjelszo' ); ?></span>
+							</span>
+						</label>
+
+						<div class="mjz-field" style="margin-top:18px;">
+							<label for="mjz-ajax-exceptions"><?php esc_html_e( 'AJAX végpont kivételek (soronként egy action név)', 'mesterjelszo' ); ?></label>
+							<textarea name="<?php echo esc_attr( MESTERJELSZO_OPTION_KEY ); ?>[ajax_action_exceptions]" id="mjz-ajax-exceptions" rows="3" class="large-text code"><?php echo esc_textarea( $settings['ajax_action_exceptions'] ); ?></textarea>
+							<p class="mjz-field-description"><?php esc_html_e( 'Ha egy másik bővítmény (pl. nagy fájlfeltöltő) saját admin-ajax.php végpontot használ a látogatói oldalon, és zárolt állapotban nem működik, add hozzá a bővítmény AJAX action nevét ehhez a listához. Az action nevet a bővítmény dokumentációjában, vagy a böngésző fejlesztői eszközeinek Hálózat fülén találhatod meg (a kérés "action" paramétere).', 'mesterjelszo' ); ?></p>
+						</div>
+					</div>
+
+					<div class="mjz-card-box">
+						<h2><?php esc_html_e( 'Megbízható IP-címek', 'mesterjelszo' ); ?></h2>
+
+						<label class="mjz-switch-row">
+							<span class="mjz-switch">
+								<input type="checkbox" name="<?php echo esc_attr( MESTERJELSZO_OPTION_KEY ); ?>[trusted_ips_enabled]" value="1" id="mjz-trusted-ips-enabled" <?php checked( ! empty( $settings['trusted_ips_enabled'] ) ); ?>>
+								<span class="mjz-switch-slider" aria-hidden="true"></span>
+							</span>
+							<span class="mjz-switch-label">
+								<strong><?php esc_html_e( 'Megbízható IP-címek engedélyezése', 'mesterjelszo' ); ?></strong>
+								<span class="mjz-field-description"><?php esc_html_e( 'Ha be van kapcsolva, az alábbi listán szereplő IP-címekről érkező látogatók a mesterjelszó megadása nélkül, megbízható felhasználóként léphetnek tovább.', 'mesterjelszo' ); ?></span>
+							</span>
+						</label>
+
+						<div class="mjz-field" id="mjz-trusted-ips-field" style="margin-top:16px;">
+							<label for="mjz-trusted-ips"><?php esc_html_e( 'IP-címek listája (soronként egy, CIDR jelölés is támogatott, pl. 203.0.113.0/24)', 'mesterjelszo' ); ?></label>
+							<textarea name="<?php echo esc_attr( MESTERJELSZO_OPTION_KEY ); ?>[trusted_ips]" id="mjz-trusted-ips" rows="4" class="large-text code"><?php echo esc_textarea( $settings['trusted_ips'] ); ?></textarea>
+						</div>
+					</div>
+
 					<div class="mjz-card-box mjz-info-box">
 						<h2><span class="dashicons dashicons-info"></span> <?php esc_html_e( 'Tudnivalók', 'mesterjelszo' ); ?></h2>
 						<ul>
 							<li><?php esc_html_e( 'A mesterjelszó egyirányú, a WordPress core jelszó-kezelésével megegyező hash formában kerül tárolásra, ez alapján történik a látogatók hitelesítése. A "Jelenlegi mesterjelszó megtekintése" funkcióhoz emellett egy titkosított, visszafejthető másolat is tárolásra kerül, amely kizárólag admin jogosultsággal kérdezhető le.', 'mesterjelszo' ); ?></li>
 							<li><?php esc_html_e( 'A védelem kiterjed az oldalakra, bejegyzésekre, egyedi tartalomtípusokra, a bejelentkezési felületre és a WordPress REST API-ra (a fent megadott kivételek kivételével).', 'mesterjelszo' ); ?></li>
 							<li><?php esc_html_e( 'Az xmlrpc.php végpont mindig kihagyásra kerül a zárolásból, hogy a rá támaszkodó szolgáltatások (pl. Jetpack, remote publishing eszközök) továbbra is működjenek.', 'mesterjelszo' ); ?></li>
+							<li><?php esc_html_e( 'A jelszókérő felület alapértelmezetten sima HTTP 200-as válaszkóddal jelenik meg (a keresőmotoros indexelést a noindex jelölés önmagában megakadályozza), hogy elkerüljük a tárhelyi/CDN-szintű hibaoldal-helyettesítést. A 503-as állapotkód opcionálisan bekapcsolható fent.', 'mesterjelszo' ); ?></li>
 							<li><?php esc_html_e( 'A közvetlenül, webszerver szinten kiszolgált statikus fájlok (pl. a feltöltési mappában lévő képek közvetlen linkje) védelméhez a webszerver (Apache/Nginx) szintű beállítás is szükséges lehet, mivel ezeket a WordPress alapból nem PHP-n keresztül szolgálja ki.', 'mesterjelszo' ); ?></li>
 						</ul>
 					</div>
@@ -335,6 +447,88 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<p class="submit mjz-submit-row">
 					<?php submit_button( __( 'Beállítások mentése', 'mesterjelszo' ), 'primary mjz-save-button', 'submit', false ); ?>
 				</p>
+			</form>
+
+			<!-- ===================== NAPLÓ TAB ===================== -->
+			<?php
+			$mjz_log_counts = class_exists( 'Mesterjelszo_Login_Log' )
+				? Mesterjelszo_Login_Log::get_counts()
+				: array(
+					'day'   => 0,
+					'week'  => 0,
+					'month' => 0,
+					'year'  => 0,
+				);
+			$mjz_log_entries = class_exists( 'Mesterjelszo_Login_Log' ) ? Mesterjelszo_Login_Log::get_recent_entries( 100 ) : array();
+			?>
+			<section class="mjz-tab-panel" id="mjz-tab-log" role="tabpanel" aria-labelledby="mjz-tab-btn-log" hidden>
+
+					<div class="mjz-card-box">
+						<h2><?php esc_html_e( 'Sikertelen bejelentkezési próbálkozások', 'mesterjelszo' ); ?></h2>
+						<div class="mjz-stat-grid">
+							<div class="mjz-stat-box">
+								<span class="mjz-stat-value"><?php echo esc_html( $mjz_log_counts['day'] ); ?></span>
+								<span class="mjz-stat-label"><?php esc_html_e( '1 napon belül', 'mesterjelszo' ); ?></span>
+							</div>
+							<div class="mjz-stat-box">
+								<span class="mjz-stat-value"><?php echo esc_html( $mjz_log_counts['week'] ); ?></span>
+								<span class="mjz-stat-label"><?php esc_html_e( '1 héten belül', 'mesterjelszo' ); ?></span>
+							</div>
+							<div class="mjz-stat-box">
+								<span class="mjz-stat-value"><?php echo esc_html( $mjz_log_counts['month'] ); ?></span>
+								<span class="mjz-stat-label"><?php esc_html_e( '1 hónapon belül', 'mesterjelszo' ); ?></span>
+							</div>
+							<div class="mjz-stat-box">
+								<span class="mjz-stat-value"><?php echo esc_html( $mjz_log_counts['year'] ); ?></span>
+								<span class="mjz-stat-label"><?php esc_html_e( '1 éven belül', 'mesterjelszo' ); ?></span>
+							</div>
+						</div>
+					</div>
+
+					<div class="mjz-card-box">
+						<h2><?php esc_html_e( 'Legutóbbi próbálkozások', 'mesterjelszo' ); ?></h2>
+
+						<?php if ( empty( $mjz_log_entries ) ) : ?>
+							<p class="mjz-field-description"><?php esc_html_e( 'Még nem történt sikertelen bejelentkezési próbálkozás.', 'mesterjelszo' ); ?></p>
+						<?php else : ?>
+							<div class="mjz-log-table-wrap">
+								<table class="mjz-log-table">
+									<thead>
+										<tr>
+											<th><?php esc_html_e( 'Időpont', 'mesterjelszo' ); ?></th>
+											<th><?php esc_html_e( 'IP-cím', 'mesterjelszo' ); ?></th>
+											<th><?php esc_html_e( 'Ország', 'mesterjelszo' ); ?></th>
+											<th><?php esc_html_e( 'Város', 'mesterjelszo' ); ?></th>
+										</tr>
+									</thead>
+									<tbody>
+										<?php foreach ( $mjz_log_entries as $mjz_entry ) : ?>
+											<tr>
+												<td><?php echo esc_html( mysql2date( 'Y.m.d. H:i', $mjz_entry->created_at ) ); ?></td>
+												<td><?php echo esc_html( $mjz_entry->ip_address ); ?></td>
+												<td><?php echo esc_html( $mjz_entry->country ? $mjz_entry->country : __( 'Feldolgozás alatt…', 'mesterjelszo' ) ); ?></td>
+												<td><?php echo esc_html( $mjz_entry->city ? $mjz_entry->city : '—' ); ?></td>
+											</tr>
+										<?php endforeach; ?>
+									</tbody>
+								</table>
+							</div>
+						<?php endif; ?>
+
+						<p class="mjz-field-description"><?php esc_html_e( 'A geolokációs adatok (ország, város) egy külső, ingyenes IP-lekérdező szolgáltatáson keresztül, késleltetve töltődnek fel, és 30 napig gyorsítótárazva vannak. A napló legfeljebb 1 évig őrzi meg az adatokat, utána automatikusan törlődnek.', 'mesterjelszo' ); ?></p>
+
+						<form method="post" action="<?php echo esc_url( admin_url( 'admin.php?page=mesterjelszo' ) ); ?>" onsubmit="return confirm('<?php echo esc_js( __( 'Biztosan törlöd a teljes bejelentkezési naplót? Ez nem vonható vissza.', 'mesterjelszo' ) ); ?>');">
+							<?php wp_nonce_field( 'mesterjelszo_clear_log_action', 'mesterjelszo_clear_log_nonce' ); ?>
+							<button type="submit" name="mesterjelszo_clear_log" value="1" class="button button-secondary"><?php esc_html_e( 'Napló törlése', 'mesterjelszo' ); ?></button>
+						</form>
+					</div>
+
+					<div class="mjz-card-box mjz-info-box">
+						<h2><span class="dashicons dashicons-info"></span> <?php esc_html_e( 'Adatvédelmi tudnivaló', 'mesterjelszo' ); ?></h2>
+						<p><?php esc_html_e( 'Ez a napló - a plugin más részeitől eltérően - a látogatók valódi IP-címét tárolja, kifejezetten biztonsági célból (támadási minták nyomon követése). Ha ezt a funkciót használod, érdemes megemlítened a weboldalad adatkezelési tájékoztatójában.', 'mesterjelszo' ); ?></p>
+					</div>
+
+				</section>
 
 			</div>
 
@@ -359,5 +553,5 @@ if ( ! defined( 'ABSPATH' ) ) {
 			</aside>
 
 		</div>
-	</form>
 </div>
+

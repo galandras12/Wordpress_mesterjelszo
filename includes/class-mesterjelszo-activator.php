@@ -37,6 +37,12 @@ class Mesterjelszo_Activator {
 			add_option( MESTERJELSZO_PASSWORD_ENCRYPTED_OPTION_KEY, '' );
 		}
 
+		if ( class_exists( 'Mesterjelszo_Login_Log' ) ) {
+			Mesterjelszo_Login_Log::create_table();
+		}
+
+		update_option( 'mesterjelszo_db_version', MESTERJELSZO_DB_VERSION, false );
+
 		flush_rewrite_rules();
 	}
 }
