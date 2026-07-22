@@ -76,7 +76,6 @@ require_once MESTERJELSZO_PLUGIN_DIR . 'includes/class-mesterjelszo-public.php';
 require_once MESTERJELSZO_PLUGIN_DIR . 'includes/class-mesterjelszo.php';
 require_once MESTERJELSZO_PLUGIN_DIR . 'includes/class-mesterjelszo-activator.php';
 require_once MESTERJELSZO_PLUGIN_DIR . 'includes/class-mesterjelszo-deactivator.php';
-require_once MESTERJELSZO_PLUGIN_DIR . 'includes/compat-fix.php';
 
 /**
  * Aktiváláskor lefutó folyamat regisztrálása (alapértelmezett beállítások
