@@ -19,6 +19,7 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 // Fő beállítások és a jelszó hash törlése.
 delete_option( 'mesterjelszo_settings' );
 delete_option( 'mesterjelszo_password_hash' );
+delete_option( 'mesterjelszo_password_encrypted' );
 
 // Többsite (multisite) hálózat esetén az összes aloldalon is takarítunk.
 if ( is_multisite() ) {
@@ -28,6 +29,7 @@ if ( is_multisite() ) {
 		switch_to_blog( $site_id );
 		delete_option( 'mesterjelszo_settings' );
 		delete_option( 'mesterjelszo_password_hash' );
+		delete_option( 'mesterjelszo_password_encrypted' );
 		restore_current_blog();
 	}
 }
