@@ -108,6 +108,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 							</div>
 						</div>
 						<p class="mjz-field-hint" id="mjz-password-match-hint" aria-live="polite"></p>
+
+						<?php if ( $has_password ) : ?>
+							<div class="mjz-field mjz-current-password-row" id="mjz-current-password-row">
+								<label for="mjz-current-password-display"><?php esc_html_e( 'Jelenlegi mesterjelszó', 'mesterjelszo' ); ?></label>
+								<div class="mjz-password-input-row">
+									<input type="text" id="mjz-current-password-display" class="mjz-current-password-display" value="••••••••••••" readonly>
+									<button type="button" class="button" id="mjz-reveal-password" data-nonce="<?php echo esc_attr( wp_create_nonce( 'mesterjelszo_reveal_password' ) ); ?>"><?php esc_html_e( 'Megtekintés', 'mesterjelszo' ); ?></button>
+									<button type="button" class="button-link" id="mjz-copy-password" hidden><?php esc_html_e( 'Másolás', 'mesterjelszo' ); ?></button>
+								</div>
+								<p class="mjz-field-description"><?php esc_html_e( 'Ez segít más adminisztrátoroknak nyomon követni az aktuálisan beállított mesterjelszót, anélkül hogy azt újra be kellene állítaniuk. A megtekintés minden alkalommal adminisztrátori jogosultságot igényel.', 'mesterjelszo' ); ?></p>
+							</div>
+						<?php endif; ?>
 					</div>
 
 					<div class="mjz-card-box">
@@ -259,7 +271,26 @@ if ( ! defined( 'ABSPATH' ) ) {
 						<div class="mjz-field">
 							<label for="mjz-session-duration"><?php esc_html_e( 'Munkamenet hossza (óra)', 'mesterjelszo' ); ?></label>
 							<input type="number" min="1" max="720" name="<?php echo esc_attr( MESTERJELSZO_OPTION_KEY ); ?>[session_duration]" id="mjz-session-duration" value="<?php echo esc_attr( $settings['session_duration'] ); ?>" class="small-text">
-							<p class="mjz-field-description"><?php esc_html_e( 'Ennyi óráig marad feloldva a weboldal egy látogató böngészőjében a sikeres jelszó megadása után.', 'mesterjelszo' ); ?></p>
+							<p class="mjz-field-description"><?php esc_html_e( 'Ennyi óráig marad feloldva a weboldal egy látogató böngészőjében a sikeres jelszó megadása után - kivéve, ha a látogató az alábbi "Emlékezz rám" opciót választja.', 'mesterjelszo' ); ?></p>
+						</div>
+
+						<hr class="mjz-field-divider">
+
+						<label class="mjz-switch-row">
+							<span class="mjz-switch">
+								<input type="checkbox" name="<?php echo esc_attr( MESTERJELSZO_OPTION_KEY ); ?>[remember_me_enabled]" value="1" id="mjz-remember-me-enabled" <?php checked( ! empty( $settings['remember_me_enabled'] ) ); ?>>
+								<span class="mjz-switch-slider" aria-hidden="true"></span>
+							</span>
+							<span class="mjz-switch-label">
+								<strong><?php esc_html_e( '"Emlékezz rám" opció engedélyezése a látogatóknak', 'mesterjelszo' ); ?></strong>
+								<span class="mjz-field-description"><?php esc_html_e( 'Ha be van kapcsolva, a jelszókérő felületen megjelenik egy jelölőnégyzet, amellyel a látogató kérheti, hogy a böngészője hosszabb ideig maradjon feloldva. Alapértelmezetten KI van kapcsolva, ilyenkor mindig a fenti munkamenet-hossz érvényes, jelölőnégyzet nélkül.', 'mesterjelszo' ); ?></span>
+							</span>
+						</label>
+
+						<div class="mjz-field" id="mjz-remember-me-days-field" style="margin-top:16px;">
+							<label for="mjz-remember-me-days"><?php esc_html_e( '"Emlékezz rám" munkamenet hossza (nap)', 'mesterjelszo' ); ?></label>
+							<input type="number" min="1" max="365" name="<?php echo esc_attr( MESTERJELSZO_OPTION_KEY ); ?>[remember_me_days]" id="mjz-remember-me-days" value="<?php echo esc_attr( $settings['remember_me_days'] ); ?>" class="small-text">
+							<p class="mjz-field-description"><?php esc_html_e( 'Ennyi napig marad feloldva a böngésző, ha a látogató bejelöli az "Emlékezz rám" opciót. Alapértelmezés: 15 nap.', 'mesterjelszo' ); ?></p>
 						</div>
 					</div>
 
@@ -278,11 +309,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 						<p class="mjz-field-description"><?php esc_html_e( 'A megadott számú sikertelen próbálkozás után az adott látogató IP-címéhez tartozó munkamenet ideiglenesen zárolásra kerül. Az IP-cím soha nem kerül olvasható formában tárolásra, kizárólag egy anonimizált hash formájában.', 'mesterjelszo' ); ?></p>
 					</div>
 
+					<div class="mjz-card-box">
+						<h2><?php esc_html_e( 'REST API kivételek (Jetpack és hasonló szolgáltatások)', 'mesterjelszo' ); ?></h2>
+						<div class="mjz-field">
+							<label for="mjz-rest-exceptions"><?php esc_html_e( 'Kivételezett REST API route-ok (soronként egy)', 'mesterjelszo' ); ?></label>
+							<textarea name="<?php echo esc_attr( MESTERJELSZO_OPTION_KEY ); ?>[rest_api_exceptions]" id="mjz-rest-exceptions" rows="4" class="large-text code"><?php echo esc_textarea( $settings['rest_api_exceptions'] ); ?></textarea>
+							<p class="mjz-field-description">
+								<?php esc_html_e( 'Az itt felsorolt REST API route-prefixek mindig elérhetők maradnak, függetlenül a jelszóvédelemtől - ezekre a saját, aláírás- vagy token-alapú hitelesítésüket használó szolgáltatásoknak (pl. Jetpack) van szükségük. Enélkül a szolgáltatás "a weboldal nem elérhető" hibát adhat vissza. Az xmlrpc.php végpont biztonsági okból mindig automatikusan mentesül.', 'mesterjelszo' ); ?>
+							</p>
+						</div>
+					</div>
+
 					<div class="mjz-card-box mjz-info-box">
 						<h2><span class="dashicons dashicons-info"></span> <?php esc_html_e( 'Tudnivalók', 'mesterjelszo' ); ?></h2>
 						<ul>
-							<li><?php esc_html_e( 'A mesterjelszó egyirányú, a WordPress core jelszó-kezelésével megegyező hash formában kerül tárolásra - visszafejthető formában soha.', 'mesterjelszo' ); ?></li>
-							<li><?php esc_html_e( 'A védelem kiterjed az oldalakra, bejegyzésekre, egyedi tartalomtípusokra, a bejelentkezési felületre és a WordPress REST API-ra.', 'mesterjelszo' ); ?></li>
+							<li><?php esc_html_e( 'A mesterjelszó egyirányú, a WordPress core jelszó-kezelésével megegyező hash formában kerül tárolásra, ez alapján történik a látogatók hitelesítése. A "Jelenlegi mesterjelszó megtekintése" funkcióhoz emellett egy titkosított, visszafejthető másolat is tárolásra kerül, amely kizárólag admin jogosultsággal kérdezhető le.', 'mesterjelszo' ); ?></li>
+							<li><?php esc_html_e( 'A védelem kiterjed az oldalakra, bejegyzésekre, egyedi tartalomtípusokra, a bejelentkezési felületre és a WordPress REST API-ra (a fent megadott kivételek kivételével).', 'mesterjelszo' ); ?></li>
+							<li><?php esc_html_e( 'Az xmlrpc.php végpont mindig kihagyásra kerül a zárolásból, hogy a rá támaszkodó szolgáltatások (pl. Jetpack, remote publishing eszközök) továbbra is működjenek.', 'mesterjelszo' ); ?></li>
 							<li><?php esc_html_e( 'A közvetlenül, webszerver szinten kiszolgált statikus fájlok (pl. a feltöltési mappában lévő képek közvetlen linkje) védelméhez a webszerver (Apache/Nginx) szintű beállítás is szükséges lehet, mivel ezeket a WordPress alapból nem PHP-n keresztül szolgálja ki.', 'mesterjelszo' ); ?></li>
 						</ul>
 					</div>
