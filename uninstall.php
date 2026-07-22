@@ -20,6 +20,15 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 delete_option( 'mesterjelszo_settings' );
 delete_option( 'mesterjelszo_password_hash' );
 delete_option( 'mesterjelszo_password_encrypted' );
+delete_option( 'mesterjelszo_db_version' );
+delete_option( 'mesterjelszo_log_last_prune' );
+
+global $wpdb;
+
+// A bejelentkezési napló egyedi adatbázistáblájának törlése.
+// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange
+$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}mesterjelszo_login_log" );
+// phpcs:enable
 
 // Többsite (multisite) hálózat esetén az összes aloldalon is takarítunk.
 if ( is_multisite() ) {
@@ -30,6 +39,11 @@ if ( is_multisite() ) {
 		delete_option( 'mesterjelszo_settings' );
 		delete_option( 'mesterjelszo_password_hash' );
 		delete_option( 'mesterjelszo_password_encrypted' );
+		delete_option( 'mesterjelszo_db_version' );
+		delete_option( 'mesterjelszo_log_last_prune' );
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange
+		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}mesterjelszo_login_log" );
+		// phpcs:enable
 		restore_current_blog();
 	}
 }

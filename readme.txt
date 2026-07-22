@@ -4,7 +4,7 @@ Tags: password protection, security, maintenance mode, coming soon, access contr
 Requires at least: 6.4
 Tested up to: 7.0.1
 Requires PHP: 8.0
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -61,9 +61,24 @@ A WordPress core felhasználói jelszavaitól eltérően a mesterjelszó egy meg
 
 = Miért nem működik a Jetpack (vagy más, REST API-ra/XML-RPC-re támaszkodó szolgáltatás) bekapcsolt védelem mellett? =
 
-Az xmlrpc.php végpont mindig automatikusan mentesül a zárolás alól. A REST API-hoz emellett a Biztonság fülön megadható egy kivétel-lista (alapértelmezetten a Jetpack szükséges route-jaival feltöltve), amely szintén mindig elérhető marad, függetlenül a jelszóvédelemtől.
+Az xmlrpc.php végpont mindig automatikusan mentesül a zárolás alól. A REST API-hoz emellett a Biztonság fülön megadható egy kivétel-lista (alapértelmezetten a Jetpack szükséges route-jaival feltöltve), amely szintén mindig elérhető marad, függetlenül a jelszóvédelemtől. Ha egy másik bővítmény saját admin-ajax.php végpontot használ a látogatói oldalon, azt az "AJAX végpont kivételek" listához adva teheted mentessé.
+
+= A védelem bekapcsolása után a teljes weboldal, még a bejelentkezési felület is elérhetetlenné vált (503-as hiba)! =
+
+Ez egy ismert, 1.0.2-ben javított probléma volt: a bővítmény korábban mindig valódi HTTP 503-as állapotkóddal küldte ki a jelszókérő oldalt, amit egyes tárhelyek, CDN-ek vagy biztonsági bővítmények (pl. Wordfence, LiteSpeed Cache) a saját hibaoldalukkal helyettesítettek. 1.0.2 óta a bővítmény alapértelmezetten sima HTTP 200-as választ küld (a keresőmotoros indexelést a noindex jelölés önmagában megakadályozza); a 503-as állapotkód a Biztonság fülön, saját felelősségre, opcionálisan bekapcsolható.
+
+= Ki fér hozzá a bejelentkezési naplóhoz és mit tartalmaz? =
+
+Kizárólag manage_options jogosultsággal rendelkező adminisztrátorok. A napló a sikertelen mesterjelszó-próbálkozások valódi IP-címét, valamint a hozzá tartozó (külső szolgáltatáson keresztül lekérdezett) ország/város adatokat tárolja, legfeljebb 1 évig. Ez eltér a plugin többi részének anonimizált IP-kezelésétől - ha ezt a funkciót használod, érdemes megemlítened a weboldalad adatkezelési tájékoztatójában.
 
 == Changelog ==
+
+= 1.0.2 =
+* HOTFIX: a jelszókérő oldal alapértelmezetten HTTP 200-as választ küld a korábbi, mindig kötelező 503 helyett, mivel egyes tárhelyek/CDN-ek/biztonsági bővítmények a 503-at saját hibaoldallal helyettesítették, ami a teljes weboldalt (a bejelentkezési felülettel együtt) elérhetetlenné tette. A 503 opcionálisan visszakapcsolható.
+* Új: bejelentkezési napló fül - sikertelen próbálkozások IP-cím és ország/város szerint, 1 nap / 1 hét / 1 hónap / 1 év bontásban, automatikus 1 éves megőrzési idővel.
+* Új: megbízható IP-címek listája (CIDR-támogatással) - a listán szereplő látogatók átugorják a jelszókérő felületet, ki/bekapcsolható.
+* Új: testreszabható AJAX végpont kivétel-lista más bővítmények (pl. nagy fájlfeltöltők) frontend AJAX funkcióinak kompatibilitásához.
+* Részletekért lásd a changelog.txt fájlt.
 
 = 1.0.1 =
 * Új: a mesterjelszó admin felületen megtekinthető, hogy más adminisztrátorok is nyomon tudják követni.

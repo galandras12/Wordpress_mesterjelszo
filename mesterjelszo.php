@@ -3,7 +3,7 @@
  * Plugin Name:       Mesterjelszó
  * Plugin URI:        https://github.com/galandras12/Wordpress_mesterjelszo
  * Description:       Teljes weboldal-védelem egyetlen mesterjelszóval: oldalak, bejegyzések, egyedi tartalomtípusok, a REST API és a bejelentkezési felület zárolása, modern, testreszabható admin felülettel.
- * Version:           1.0.1
+ * Version:           1.0.2
  * Requires at least: 6.4
  * Tested up to:      7.0.1
  * Requires PHP:      8.0
@@ -23,7 +23,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /** Plugin verziószám - cache-buster a beágyazott CSS/JS fájlokhoz. */
-define( 'MESTERJELSZO_VERSION', '1.0.1' );
+define( 'MESTERJELSZO_VERSION', '1.0.2' );
+
+/**
+ * Adatbázis-séma verziószám. Ha ez eltér a tárolt 'mesterjelszo_db_version'
+ * option értékétől, a plugin automatikusan lefuttatja a szükséges
+ * frissítési lépéseket (pl. új tábla létrehozása) - így akkor is helyesen
+ * frissül minden, ha valaki csak lecseréli a plugin fájljait, anélkül hogy
+ * deaktiválná és újra aktiválná a bővítményt.
+ */
+define( 'MESTERJELSZO_DB_VERSION', '1.0.2' );
 
 /** A plugin fő fájljának abszolút elérési útja. */
 define( 'MESTERJELSZO_PLUGIN_FILE', __FILE__ );
@@ -71,6 +80,7 @@ if ( version_compare( PHP_VERSION, '8.0', '<' ) ) {
 
 // A plugin osztályainak betöltése.
 require_once MESTERJELSZO_PLUGIN_DIR . 'includes/class-mesterjelszo-security.php';
+require_once MESTERJELSZO_PLUGIN_DIR . 'includes/class-mesterjelszo-login-log.php';
 require_once MESTERJELSZO_PLUGIN_DIR . 'includes/class-mesterjelszo-admin.php';
 require_once MESTERJELSZO_PLUGIN_DIR . 'includes/class-mesterjelszo-public.php';
 require_once MESTERJELSZO_PLUGIN_DIR . 'includes/class-mesterjelszo.php';
