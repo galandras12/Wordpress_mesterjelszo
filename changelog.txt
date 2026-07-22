@@ -1,0 +1,139 @@
+Mesterjelszó - Változásnapló
+=============================
+
+Ez a fájl a bővítmény összes érdemi változását részletesen dokumentálja
+verziónként. A readme.txt "Changelog" szekciója ennek csak rövid,
+összefoglaló kivonatát tartalmazza.
+
+
+## [1.0.1]
+
+### Új funkciók
+
+- **Jelenlegi mesterjelszó megtekintése (admin felület)**
+  Az "Alapbeállítások" fülön, a "Mesterjelszó" kártyán - ha már van
+  beállított jelszó - megjelenik egy "Jelenlegi mesterjelszó" mező egy
+  "Megtekintés" gombbal. A gombra kattintva, kizárólag manage_options
+  jogosultsággal és dedikált nonce-cal védett AJAX kérésen keresztül,
+  megjelenik az aktuálisan érvényes mesterjelszó. Ezzel más
+  adminisztrátorok is nyomon tudják követni a beállított jelszót anélkül,
+  hogy azt újra be kellene állítaniuk. A mezőhöz "Másolás" gomb is
+  tartozik (vágólapra másolás).
+
+- **"Emlékezz rám" opció a látogatóknak**
+  A "Biztonság" fül "Munkamenet" szekciójában új kapcsoló érhető el:
+  "Emlékezz rám" opció engedélyezése a látogatóknak". Ha az
+  adminisztrátor bekapcsolja, a jelszókérő felületen megjelenik egy
+  jelölőnégyzet, amellyel a látogató kérheti, hogy a böngészője hosszabb
+  ideig (alapértelmezetten 15 napig, adminisztrátor által 1-365 nap
+  között állítható) maradjon feloldva a szokásos, óra-alapú munkamenet-
+  hossz helyett.
+  ALAPÉRTELMEZETTEN KIKAPCSOLT állapotú. Amíg az adminisztrátor be nem
+  kapcsolja, a jelölőnégyzet nem jelenik meg, és minden látogatóra a
+  meglévő, alapértelmezetten 24 órás (vagy az admin által beállított)
+  munkamenet-hosszúság vonatkozik, változatlanul.
+
+- **REST API kivétel-lista és XML-RPC mentesítés (Jetpack-kompatibilitás)**
+  A "Biztonság" fülön új "REST API kivételek (Jetpack és hasonló
+  szolgáltatások)" kártya érhető el, ahol az adminisztrátor soronként
+  megadhat olyan REST API route-prefixeket, amelyek mindig elérhetők
+  maradnak, függetlenül a jelszóvédelem állapotától. Alapértelmezetten a
+  "jetpack/v4" és "jetpack-blogs/1.1" prefixek szerepelnek a listán, mivel
+  a Jetpack ezeken keresztül kommunikál a WordPress.com-mal (kapcsolat-
+  kezelés, statisztikák, modulok stb.), és saját, aláírás-alapú
+  hitelesítéssel rendelkezik.
+  Emellett az xmlrpc.php végpont mostantól MINDIG, automatikusan
+  kihagyásra kerül a zárolásból - ezen keresztül is jelentős Jetpack-
+  kommunikáció zajlik, valamint más remote publishing eszközök,
+  mobilalkalmazások is erre támaszkodhatnak.
+  Ez a két változás oldja meg, hogy a Jetpack (és hasonló szolgáltatások)
+  a korábbi verzióban "a weboldal nem elérhető" jellegű hibát adtak
+  vissza, amikor a Mesterjelszó védelem be volt kapcsolva.
+
+### Biztonsági megjegyzés
+
+A "Jelenlegi mesterjelszó megtekintése" funkció működéséhez a plugin a
+jelszó egy MÁSODIK, visszafejthető másolatát is eltárolja az
+adatbázisban, a meglévő, visszafejthetetlen hash MELLETT:
+
+- Titkosítás: AES-256-CBC.
+- A titkosító kulcs a WordPress saját, kizárólag a wp-config.php fájlban
+  (tehát NEM az adatbázisban) tárolt AUTH_KEY / AUTH_SALT / SECURE_AUTH_KEY
+  értékeiből származik - ez védelmi réteget ad: egy pusztán adatbázis-
+  szintű adatszivárgás önmagában nem elegendő a titkosított mesterjelszó
+  visszafejtéséhez.
+- A tényleges LÁTOGATÓI jelszó-ellenőrzés (a jelszókérő felületen történő
+  bejelentkezés) továbbra is KIZÁRÓLAG az egyirányú hash-t használja - ez
+  nem változott, és nem is fog.
+- A titkosított másolat kizárólag adminisztrátori (manage_options)
+  jogosultsággal, dedikált nonce-cal védett AJAX kérésen keresztül
+  kérdezhető le, és soha nem szerepel a nyers HTML forráskódban.
+- Ha a szerveren nem érhető el a PHP OpenSSL bővítménye, a funkció
+  automatikusan inaktív marad (a "Megtekintés" gomb hibaüzenetet ad
+  vissza), a plugin ettől függetlenül továbbra is helyesen működik a
+  hash-elt formával.
+
+### Módosítások
+
+- A plugin fejléce (mesterjelszo.php) frissült:
+  - Author: "galandras12 + AI"
+  - Author URI: "https://github.com/galandras12"
+  - Plugin URI: "https://github.com/galandras12/Wordpress_mesterjelszo"
+  - Version: 1.0.1
+- "Tested up to" 7.0.1-re frissítve - a felhasználó megerősítette, hogy a
+  bővítmény WordPress 7.0.1 alatt is hibamentesen működik.
+- A readme.txt Changelog szekciója mostantól csak rövid összefoglalót
+  tartalmaz; a részletes, verziónkénti változásnaplót ez a changelog.txt
+  fájl vezeti.
+
+### Technikai részletek fejlesztőknek
+
+- Új wp_options kulcs: `mesterjelszo_password_encrypted` (a titkosított,
+  visszafejthető jelszó-másolat tárolására).
+- Új AJAX végpont: `wp_ajax_mesterjelszo_reveal_password`
+  (Mesterjelszo_Admin::ajax_reveal_password()).
+- `Mesterjelszo_Security::create_session()` mostantól egy opcionális
+  `bool $remember` paramétert fogad; ha true és az admin engedélyezte az
+  "Emlékezz rám" funkciót, a beállított napok száma alapján számolja a
+  munkamenet hosszát.
+- `Mesterjelszo_Public::ajax_verify_password()` beolvassa a beküldött
+  `remember_me` mezőt, és továbbadja a create_session() hívásnak - a
+  tényleges engedélyezés mindig szerver oldalon, az admin beállítás
+  alapján dől el, kliens oldali módosítással nem kerülhető meg.
+- `Mesterjelszo_Public::maybe_gate()` új korai kilépési pont: ha
+  `XMLRPC_REQUEST` konstans igaz, a metódus azonnal visszatér.
+- `Mesterjelszo_Public::protect_rest_api()` a REST route-ot a kérés
+  URL-jéből (vagy csúf permalink esetén a `rest_route` query paraméterből)
+  állapítja meg, és a beállított kivétel-prefixekkel veti össze
+  (`get_current_rest_route()`, `is_rest_route_exempt()`,
+  `get_rest_exceptions()`).
+- Új beállítás-mezők (`mesterjelszo_settings` option tömbben):
+  `remember_me_enabled` (bool, alap: false), `remember_me_days` (int,
+  alap: 15), `rest_api_exceptions` (soronkénti string, alap:
+  "jetpack/v4\njetpack-blogs/1.1").
+- `uninstall.php` kiegészítve az új `mesterjelszo_password_encrypted`
+  option törlésével (single- és multisite esetén egyaránt).
+- `class-mesterjelszo-activator.php` kiegészítve az új option
+  inicializálásával aktiváláskor.
+
+
+## [1.0.0]
+
+### Első kiadás
+
+- Teljes weboldal-védelem egyetlen mesterjelszóval: oldalak, bejegyzések,
+  egyedi tartalomtípusok, WordPress REST API és a bejelentkezési felület
+  zárolása.
+- Modern, kártya-alapú, reszponzív admin felület élő előnézettel.
+- Mesterjelszó egyirányú (WordPress core szabvány szerinti) hash-elt
+  tárolása.
+- Feltölthető logó, megjeleníthető weboldal-név, szabadon szerkeszthető
+  üzenet.
+- Testreszabható háttér (szín/kép), átlátszóság, világos/sötét/automatikus
+  mód, egyedi színek.
+- Középre igazított, nagy betűs, akadálymentes jelszókérő felület.
+- Brute-force védelem: próbálkozás-limit és ideiglenes zárolás,
+  anonimizált IP-hash alapján.
+- Biztonságos, HttpOnly, SameSite sütire épülő munkamenet-kezelés.
+- Nonce-védelem, bemenet-validáció, kimenet-escaping minden felületen.
+- GDPR-barát adatkezelés, fordításra előkészített szövegek.
