@@ -33,6 +33,10 @@ class Mesterjelszo_Activator {
 			add_option( MESTERJELSZO_PASSWORD_OPTION_KEY, '' );
 		}
 
+		if ( false === get_option( MESTERJELSZO_PASSWORD_ENCRYPTED_OPTION_KEY ) ) {
+			add_option( MESTERJELSZO_PASSWORD_ENCRYPTED_OPTION_KEY, '' );
+		}
+
 		flush_rewrite_rules();
 	}
 }
