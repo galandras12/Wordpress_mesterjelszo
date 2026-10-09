@@ -2,9 +2,9 @@
 Contributors: galandras12
 Tags: password protection, security, maintenance mode, coming soon, access control
 Requires at least: 6.4
-Tested up to: 7.0.1
+Tested up to: 7.1.3
 Requires PHP: 8.0
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -72,6 +72,13 @@ Ez egy ismert, 1.0.2-ben javított probléma volt: a bővítmény korábban mind
 Kizárólag manage_options jogosultsággal rendelkező adminisztrátorok. A napló a sikertelen mesterjelszó-próbálkozások valódi IP-címét, valamint a hozzá tartozó (külső szolgáltatáson keresztül lekérdezett) ország/város adatokat tárolja, legfeljebb 1 évig. Ez eltér a plugin többi részének anonimizált IP-kezelésétől - ha ezt a funkciót használod, érdemes megemlítened a weboldalad adatkezelési tájékoztatójában.
 
 == Changelog ==
+
+= 1.0.5 =
+* Új: a verziószám mostantól mindig látszik az admin felület fejlécében a név mellett.
+* Új: világos / sötét mód váltó (nap / hold csúszka) az admin felületen; alapértelmezetten világos, a választást a program felhasználónként megjegyzi.
+* Javítás: az 1.0.3 és 1.0.4 JavaScript-javításai tévesen .j_ kiterjesztésű fájlokba kerültek, ezért nem töltődtek be - most a tényleges .js fájlokba kerültek.
+* Frissítésbiztonság: frissítéskor a beállítások és a mentett (hash-elt, titkosított) jelszó nem íródik felül; hiányzó opciók csak pótlódnak.
+* Kompatibilitás: átvizsgálva WordPress 7.1.3 és PHP 8.3 szempontjából, elavult függvényhasználat nem található.
 
 = 1.0.4 =
 * HOTFIX: a háttérszín-választó palettája és a logó/háttérkép kiválasztó gombjai nem működtek (ugyanaz a jQuery ready-sor probléma okozta, mint az 1.0.3-ban javított fül-váltási hibát). Az admin JS indítása mostantól teljesen független natív JavaScript-re épül, minden funkció külön hibavédelemmel.

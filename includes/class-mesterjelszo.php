@@ -85,6 +85,14 @@ class Mesterjelszo {
 			return;
 		}
 
+		// Frissítésbiztos adatmegőrzés: a meglévő beállításokat és a mentett
+		// (hash-elt és titkosított) jelszót SOHA nem írjuk felül - az
+		// add_option() csak akkor hoz létre értéket, ha az option még nem
+		// létezik.
+		add_option( MESTERJELSZO_OPTION_KEY, Mesterjelszo_Admin::get_default_settings() );
+		add_option( MESTERJELSZO_PASSWORD_OPTION_KEY, '', '', false );
+		add_option( MESTERJELSZO_PASSWORD_ENCRYPTED_OPTION_KEY, '', '', false );
+
 		if ( class_exists( 'Mesterjelszo_Login_Log' ) ) {
 			Mesterjelszo_Login_Log::create_table();
 		}

@@ -1,39 +1,95 @@
 /**
  * Mesterjelszó - admin beállítási felület viselkedése.
- * jQuery-t használ, mivel a WordPress admin felület wp-color-picker és
- * media uploader komponensei is jQuery-alapúak.
+ * jQuery-t használ a wp-color-picker és media uploader komponensekhez
+ * (ezek maguk is jQuery/Backbone-alapúak), DE az indítás SZÁNDÉKOSAN NEM
+ * a jQuery megosztott document-ready eseménysorán keresztül történik -
+ * lásd az alábbi, mjzAdminInit() előtti megjegyzést.
  */
 (function ($) {
 	'use strict';
 
-	$(function () {
-		initTabs();
-		initColorPickers();
-		initMediaPickers();
-		initOpacitySlider();
-		initBgTypeToggle();
-		initPasswordToggle();
-		initPasswordMatchValidation();
-		initLivePreview();
-		initRevealPassword();
-		initRememberMeToggle();
-	});
+	/**
+	 * 1.0.4 HOTFIX: korábban minden inicializáló függvény egyetlen,
+	 * jQuery(document).ready() callback-en belül futott. Kiderült, hogy ha
+	 * egy MÁSIK, ugyanazon az admin oldalon betöltődő bővítmény szkriptje
+	 * hibát dob a saját, szintén jQuery ready-re feliratkozó kódjában, az
+	 * bizonyos körülmények között megakaszthatja az UTÁNA regisztrált
+	 * ready callback-eket - ez korábban a fülváltást (1.0.3-ban javítva),
+	 * majd kiderült, hogy a színválasztót és a médiafeltöltő gombokat is
+	 * (jelen, 1.0.4-es javítás) érintette, mivel mindegyik ugyanabban a
+	 * veszélyeztetett callback-ben futott.
+	 *
+	 * A végleges megoldás: az indítás natív `document.readyState` /
+	 * `DOMContentLoaded` alapú, TELJESEN függetlenül a jQuery saját,
+	 * megosztott ready-sorától - így más bővítmények szkript-hibái nem
+	 * tudják megakasztani. Emellett minden egyes funkció külön try/catch
+	 * blokkban fut: ha valamelyik (pl. a színválasztó, ha hiányzik egy
+	 * függősége) mégis hibát dobna, az a többi funkció (média-feltöltő,
+	 * élő előnézet stb.) működését többé nem akaszthatja meg.
+	 */
+	function mjzAdminInit() {
+		var initializers = [
+			initColorPickers,
+			initMediaPickers,
+			initOpacitySlider,
+			initBgTypeToggle,
+			initPasswordToggle,
+			initPasswordMatchValidation,
+			initLivePreview,
+			initRevealPassword,
+			initRememberMeToggle,
+			initTrustedIpsToggle,
+			initThemeToggle
+		];
+
+		for (var i = 0; i < initializers.length; i++) {
+			try {
+				initializers[i]();
+			} catch (error) {
+				// eslint-disable-next-line no-console
+				if (window.console && window.console.error) {
+					window.console.error('Mesterjelszó admin JS hiba (' + (initializers[i].name || 'ismeretlen funkció') + '):', error);
+				}
+			}
+		}
+	}
+
+	if ('loading' === document.readyState) {
+		document.addEventListener('DOMContentLoaded', mjzAdminInit);
+	} else {
+		// A script footer-ben töltődik be, ezért a DOMContentLoaded esemény
+		// gyakran már lefutott, mire idáig ér a végrehajtás - ilyenkor
+		// azonnal futtatunk, nem várunk egy már elszalasztott eseményre.
+		mjzAdminInit();
+	}
 
 	/**
-	 * Tabok közötti váltás kezelése, ARIA attribútumok karbantartásával.
+	 * Világos / sötét mód váltó. A választás felhasználónként, a szerveren
+	 * (user meta) kerül mentésre, így minden eszközön megmarad; az oldal
+	 * betöltésekor a téma szerver oldalon kerül a markupba (nincs villogás).
 	 */
-	function initTabs() {
-		var $tabs = $('.mjz-tab');
-		var $panels = $('.mjz-tab-panel');
+	function initThemeToggle() {
+		var wrap = document.getElementById('mjz-admin-wrap');
+		var toggle = document.getElementById('mjz-theme-toggle');
 
-		$tabs.on('click', function () {
-			var target = $(this).data('tab');
+		if (!wrap || !toggle) {
+			return;
+		}
 
-			$tabs.removeClass('is-active').attr('aria-selected', 'false');
-			$(this).addClass('is-active').attr('aria-selected', 'true');
+		toggle.addEventListener('change', function () {
+			var theme = toggle.checked ? 'dark' : 'light';
+			wrap.classList.toggle('mjz-theme-dark', 'dark' === theme);
+			wrap.setAttribute('data-theme', theme);
 
-			$panels.removeClass('is-active').attr('hidden', true);
-			$('#mjz-tab-' + target).addClass('is-active').removeAttr('hidden');
+			var cfg = window.mesterjelszoAdmin || {};
+			if (!cfg.ajaxUrl) {
+				return;
+			}
+			$.post(cfg.ajaxUrl, {
+				action: 'mesterjelszo_save_theme',
+				nonce: cfg.themeNonce,
+				theme: theme
+			});
 		});
 	}
 
@@ -365,6 +421,26 @@
 
 		function refresh() {
 			$daysField.toggleClass('is-disabled', !$checkbox.is(':checked'));
+		}
+
+		$checkbox.on('change', refresh);
+		refresh();
+	}
+
+	/**
+	 * A megbízható IP-címek mezőjének vizuális ki/bekapcsolása attól
+	 * függően, hogy a funkció engedélyezve van-e.
+	 */
+	function initTrustedIpsToggle() {
+		var $checkbox = $('#mjz-trusted-ips-enabled');
+		var $field = $('#mjz-trusted-ips-field');
+
+		if (!$checkbox.length) {
+			return;
+		}
+
+		function refresh() {
+			$field.toggleClass('is-disabled', !$checkbox.is(':checked'));
 		}
 
 		$checkbox.on('change', refresh);

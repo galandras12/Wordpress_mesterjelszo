@@ -6,6 +6,28 @@ verziónként. A readme.txt "Changelog" szekciója ennek csak rövid,
 összefoglaló kivonatát tartalmazza.
 
 
+## [1.0.5]
+
+- Új: az admin felület fejlécében a név mellett mindig látszik az aktuális
+  verziószám (MESTERJELSZO_VERSION).
+- Új: nap/hold csúszkás világos/sötét mód váltó. Alapértelmezett: világos.
+  A választás felhasználónként a user meta-ban (`mesterjelszo_admin_theme`)
+  tárolódik AJAX-szal (nonce + manage_options védelemmel), így minden
+  eszközön megmarad. Eltávolításkor az uninstall.php törli.
+- Javítás: az 1.0.3 és 1.0.4 admin/publikus JS-javításai a `.j_`
+  kiterjesztésű fájlokba kerültek, a ténylegesen betöltött `.js` fájlok régi
+  tartalommal maradtak. Most a javított tartalom a `.js` fájlokban van.
+- Frissítésbiztonság (audit): a beállítások és a jelszó (hash + titkosított
+  másolat) frissítéskor nem törlődik; az uninstall.php csak a bővítmény
+  végleges törlésekor fut. A séma-frissítés (DB_VERSION 1.0.5) csak
+  `add_option()`-nel pótolja a hiányzó opciókat, meglévőt nem ír felül.
+  Megjegyzés: a megtekinthető jelszó a wp-config.php AUTH_KEY/AUTH_SALT/
+  SECURE_AUTH_KEY értékeiből képzett kulccsal titkosított - ha ezeket
+  megváltoztatod, a jelszó megtekintése nem lesz lehetséges (újra be kell
+  állítani), a látogatói ellenőrzés a hash-sel viszont továbbra is működik.
+- Kompatibilitás: statikus átvizsgálás WordPress 7.1.3 / PHP 8.3 ellen,
+  elavult vagy eltávolított API-t nem használ; "Tested up to" 7.1.3.
+
 ## [1.0.4] - HOTFIX
 
 ### Kritikus javítás: színválasztó és médiafeltöltő gombok nem működtek

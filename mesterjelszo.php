@@ -3,9 +3,9 @@
  * Plugin Name:       Mesterjelszó
  * Plugin URI:        https://github.com/galandras12/Wordpress_mesterjelszo
  * Description:       Teljes weboldal-védelem egyetlen mesterjelszóval: oldalak, bejegyzések, egyedi tartalomtípusok, a REST API és a bejelentkezési felület zárolása, modern, testreszabható admin felülettel.
- * Version:           1.0.4
+ * Version:           1.0.5
  * Requires at least: 6.4
- * Tested up to:      7.0.1
+ * Tested up to:      7.1.3
  * Requires PHP:      8.0
  * Author:            galandras12 + AI
  * Author URI:        https://github.com/galandras12
@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /** Plugin verziószám - cache-buster a beágyazott CSS/JS fájlokhoz. */
-define( 'MESTERJELSZO_VERSION', '1.0.4' );
+define( 'MESTERJELSZO_VERSION', '1.0.5' );
 
 /**
  * Adatbázis-séma verziószám. Ha ez eltér a tárolt 'mesterjelszo_db_version'
@@ -32,7 +32,7 @@ define( 'MESTERJELSZO_VERSION', '1.0.4' );
  * frissül minden, ha valaki csak lecseréli a plugin fájljait, anélkül hogy
  * deaktiválná és újra aktiválná a bővítményt.
  */
-define( 'MESTERJELSZO_DB_VERSION', '1.0.2' );
+define( 'MESTERJELSZO_DB_VERSION', '1.0.5' );
 
 /** A plugin fő fájljának abszolút elérési útja. */
 define( 'MESTERJELSZO_PLUGIN_FILE', __FILE__ );
@@ -57,6 +57,9 @@ define( 'MESTERJELSZO_PASSWORD_OPTION_KEY', 'mesterjelszo_password_hash' );
  * a tényleges hitelesítésben.
  */
 define( 'MESTERJELSZO_PASSWORD_ENCRYPTED_OPTION_KEY', 'mesterjelszo_password_encrypted' );
+
+/** Az admin felület világos/sötét téma választásának user meta kulcsa. */
+define( 'MESTERJELSZO_THEME_META_KEY', 'mesterjelszo_admin_theme' );
 
 /** A látogatói munkamenetet azonosító süti neve. */
 define( 'MESTERJELSZO_COOKIE_NAME', 'mesterjelszo_session' );

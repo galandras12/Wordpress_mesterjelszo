@@ -51,6 +51,7 @@ class Mesterjelszo_Admin {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_action( 'admin_notices', array( $this, 'maybe_show_missing_password_notice' ) );
 		add_action( 'wp_ajax_mesterjelszo_reveal_password', array( $this, 'ajax_reveal_password' ) );
+		add_action( 'wp_ajax_mesterjelszo_save_theme', array( $this, 'ajax_save_theme' ) );
 		add_filter(
 			'plugin_action_links_' . plugin_basename( MESTERJELSZO_PLUGIN_FILE ),
 			array( $this, 'add_settings_link' )
@@ -452,10 +453,46 @@ class Mesterjelszo_Admin {
 				'hideButton'       => __( 'Elrejtés', 'mesterjelszo' ),
 				'copyButton'       => __( 'Másolás', 'mesterjelszo' ),
 				'copiedButton'     => __( 'Másolva!', 'mesterjelszo' ),
+				'themeNonce'       => wp_create_nonce( 'mesterjelszo_save_theme' ),
+				'ajaxUrl'          => admin_url( 'admin-ajax.php' ),
 				'genericError'     => __( 'Hiba történt, kérjük próbáld újra.', 'mesterjelszo' ),
 				'networkError'     => __( 'Hálózati hiba történt.', 'mesterjelszo' ),
 			)
 		);
+	}
+
+	/**
+	 * Az adott felhasználó mentett admin-felület téma beállítása
+	 * ('light' vagy 'dark'). Alapértelmezetten világos.
+	 *
+	 * @param int $user_id Felhasználó azonosító (0 = jelenlegi).
+	 * @return string
+	 */
+	public static function get_user_theme( int $user_id = 0 ): string {
+		$user_id = $user_id ? $user_id : get_current_user_id();
+		$theme   = $user_id ? get_user_meta( $user_id, MESTERJELSZO_THEME_META_KEY, true ) : '';
+
+		return 'dark' === $theme ? 'dark' : 'light';
+	}
+
+	/**
+	 * AJAX végpont: a felhasználó világos/sötét téma választásának mentése
+	 * felhasználónként (user meta), így minden eszközön megmarad.
+	 *
+	 * @return void
+	 */
+	public function ajax_save_theme(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Nincs jogosultságod ehhez a művelethez.', 'mesterjelszo' ) ), 403 );
+		}
+
+		check_ajax_referer( 'mesterjelszo_save_theme', 'nonce' );
+
+		$theme = ( isset( $_POST['theme'] ) && 'dark' === sanitize_key( wp_unslash( $_POST['theme'] ) ) ) ? 'dark' : 'light';
+
+		update_user_meta( get_current_user_id(), MESTERJELSZO_THEME_META_KEY, $theme );
+
+		wp_send_json_success( array( 'theme' => $theme ) );
 	}
 
 	/**

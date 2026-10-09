@@ -14,14 +14,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 ?>
-<div class="wrap mjz-admin-wrap">
+<?php $mjz_theme = Mesterjelszo_Admin::get_user_theme(); ?>
+<div class="wrap mjz-admin-wrap<?php echo ( 'dark' === $mjz_theme ) ? ' mjz-theme-dark' : ''; ?>" id="mjz-admin-wrap" data-theme="<?php echo esc_attr( $mjz_theme ); ?>">
 
 	<div class="mjz-admin-header">
 		<div class="mjz-admin-header-icon" aria-hidden="true">
 			<span class="dashicons dashicons-lock"></span>
 		</div>
 		<div>
-			<h1><?php esc_html_e( 'Mesterjelszó', 'mesterjelszo' ); ?></h1>
+			<h1>
+				<?php esc_html_e( 'Mesterjelszó', 'mesterjelszo' ); ?>
+				<span class="mjz-version-badge">v<?php echo esc_html( MESTERJELSZO_VERSION ); ?></span>
+			</h1>
 			<p class="mjz-admin-subtitle">
 				<?php esc_html_e( 'Védd egyetlen jelszóval a teljes weboldalt: oldalak, bejegyzések, egyedi tartalomtípusok, a REST API és a bejelentkezési felület.', 'mesterjelszo' ); ?>
 			</p>
@@ -39,6 +43,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<?php esc_html_e( 'Kikapcsolva', 'mesterjelszo' ); ?>
 			<?php endif; ?>
 		</div>
+
+		<label class="mjz-theme-toggle" title="<?php echo esc_attr__( 'Világos / sötét mód', 'mesterjelszo' ); ?>">
+			<input type="checkbox" id="mjz-theme-toggle" role="switch" aria-label="<?php echo esc_attr__( 'Sötét mód', 'mesterjelszo' ); ?>" <?php checked( 'dark' === $mjz_theme ); ?> />
+			<span class="mjz-theme-slider" aria-hidden="true">
+				<span class="mjz-theme-icon mjz-theme-sun">&#9728;</span>
+				<span class="mjz-theme-icon mjz-theme-moon">&#9790;</span>
+				<span class="mjz-theme-knob"></span>
+			</span>
+		</label>
 	</div>
 
 	<?php settings_errors( 'mesterjelszo_settings_group' ); ?>

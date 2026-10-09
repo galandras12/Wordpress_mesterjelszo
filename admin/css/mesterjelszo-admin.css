@@ -675,3 +675,162 @@ input[type="range"] {
 	background: rgba(20, 20, 30, 0.05);
 	border-color: rgba(20, 20, 30, 0.15);
 }
+
+/* ---------- Verziójelvény a fejlécben ---------- */
+
+.mjz-admin-header h1 .mjz-version-badge {
+	display: inline-block;
+	margin-left: 8px;
+	padding: 2px 10px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	line-height: 1.5;
+	vertical-align: middle;
+	color: #ffffff;
+	background: rgba(255, 255, 255, 0.16);
+	border: 1px solid rgba(255, 255, 255, 0.28);
+	border-radius: 999px;
+}
+
+/* ---------- Világos / sötét mód váltó (nap / hold csúszka) ---------- */
+
+.mjz-theme-toggle {
+	position: relative;
+	flex: 0 0 auto;
+	cursor: pointer;
+	margin-left: 12px;
+}
+
+.mjz-theme-toggle input {
+	position: absolute;
+	opacity: 0;
+	width: 0;
+	height: 0;
+}
+
+.mjz-theme-slider {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 64px;
+	height: 32px;
+	padding: 0 7px;
+	box-sizing: border-box;
+	border-radius: 999px;
+	background: #f5c542;
+	transition: background 0.25s ease;
+}
+
+.mjz-theme-icon {
+	position: relative;
+	z-index: 1;
+	font-size: 15px;
+	line-height: 1;
+	color: #ffffff;
+}
+
+.mjz-theme-knob {
+	position: absolute;
+	top: 3px;
+	left: 3px;
+	width: 26px;
+	height: 26px;
+	border-radius: 50%;
+	background: #ffffff;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+	transition: transform 0.25s ease;
+}
+
+.mjz-theme-toggle input:checked + .mjz-theme-slider {
+	background: #3b3f6b;
+}
+
+.mjz-theme-toggle input:checked + .mjz-theme-slider .mjz-theme-knob {
+	transform: translateX(32px);
+}
+
+.mjz-theme-toggle input:focus-visible + .mjz-theme-slider {
+	outline: 2px solid #ffffff;
+	outline-offset: 2px;
+}
+
+/* ---------- Sötét mód ---------- */
+
+.mjz-admin-wrap.mjz-theme-dark {
+	background: #14151f;
+	padding: 20px;
+	border-radius: 18px;
+	color: #e4e5f0;
+}
+
+.mjz-theme-dark .mjz-tabs { border-bottom-color: #34364d; }
+.mjz-theme-dark .mjz-tab { color: #a9abc4; }
+.mjz-theme-dark .mjz-tab:hover { background: #22243a; color: #ffffff; }
+.mjz-theme-dark .mjz-tab.is-active { color: #a29bfe; border-bottom-color: #a29bfe; }
+
+.mjz-theme-dark .mjz-card-box {
+	background: #1d1f31;
+	border-color: #34364d;
+	color: #e4e5f0;
+	box-shadow: none;
+}
+
+.mjz-theme-dark .mjz-card-box h2,
+.mjz-theme-dark .mjz-field label,
+.mjz-theme-dark .mjz-field-label-static,
+.mjz-theme-dark .mjz-switch-label { color: #f1f2fa; }
+
+.mjz-theme-dark .mjz-info-box li,
+.mjz-theme-dark .mjz-field-description,
+.mjz-theme-dark .mjz-stat-label,
+.mjz-theme-dark .mjz-log-table th { color: #a9abc4; }
+
+.mjz-theme-dark .mjz-card-box h2 .dashicons,
+.mjz-theme-dark .mjz-stat-value,
+.mjz-theme-dark .mjz-range-value { color: #a29bfe; }
+
+.mjz-theme-dark .mjz-field input[type="text"],
+.mjz-theme-dark .mjz-field input[type="password"],
+.mjz-theme-dark .mjz-field input[type="number"],
+.mjz-theme-dark .mjz-field textarea,
+.mjz-theme-dark .mjz-field select {
+	background: #14151f;
+	color: #f1f2fa;
+	border-color: #3f4260;
+}
+
+.mjz-theme-dark .mjz-current-password-display,
+.mjz-theme-dark .mjz-stat-box,
+.mjz-theme-dark .mjz-log-table th,
+.mjz-theme-dark .mjz-media-preview {
+	background: #14151f;
+	color: #f1f2fa;
+}
+
+.mjz-theme-dark .mjz-field-divider { border-top-color: #34364d; }
+.mjz-theme-dark .mjz-log-table-wrap,
+.mjz-theme-dark .mjz-log-table th,
+.mjz-theme-dark .mjz-log-table td { border-color: #34364d; }
+.mjz-theme-dark .mjz-log-table td { color: #e4e5f0; }
+.mjz-theme-dark .mjz-media-preview { border-color: #4a4d70; }
+.mjz-theme-dark .mjz-switch-slider { background: #4a4d70; }
+
+.mjz-theme-dark .mjz-radio-pill {
+	border-color: #3f4260;
+	color: #e4e5f0;
+}
+
+.mjz-theme-dark .mjz-radio-pill:has(input:checked) {
+	border-color: #a29bfe;
+	background: rgba(162, 155, 254, 0.14);
+	color: #c9c5ff;
+}
+
+.mjz-theme-dark .button:not(.button-primary) {
+	background: #2a2d47;
+	border-color: #3f4260;
+	color: #f1f2fa;
+}
+
+.mjz-theme-dark .mjz-preview-title { color: #f1f2fa; }

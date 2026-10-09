@@ -25,6 +25,9 @@ delete_option( 'mesterjelszo_log_last_prune' );
 
 global $wpdb;
 
+// A felhasználónkénti admin téma-beállítások (világos/sötét) törlése.
+delete_metadata( 'user', 0, 'mesterjelszo_admin_theme', '', true );
+
 // A bejelentkezési napló egyedi adatbázistáblájának törlése.
 // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange
 $wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}mesterjelszo_login_log" );

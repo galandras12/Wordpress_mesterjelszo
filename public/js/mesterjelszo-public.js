@@ -76,6 +76,12 @@
 			errorBox.textContent = message;
 			errorBox.hidden = false;
 			input.setAttribute('aria-invalid', 'true');
+
+			if (button) {
+				button.classList.add('mjz-error-state');
+			}
+
+			triggerShake();
 		}
 
 		function clearError() {
@@ -85,6 +91,36 @@
 			errorBox.textContent = '';
 			errorBox.hidden = true;
 			input.removeAttribute('aria-invalid');
+
+			if (button) {
+				button.classList.remove('mjz-error-state');
+			}
+		}
+
+		/**
+		 * A jelszómező (és a mellette lévő szem-ikon gomb) rövid
+		 * megremegtetése, jól láthatóan jelezve a hibás próbálkozást. Az
+		 * osztály eltávolítása majd újbóli hozzáadása (egy kényszerített
+		 * reflow-val közte) biztosítja, hogy egymást követő hibáknál is
+		 * mindig újrainduljon az animáció.
+		 */
+		function triggerShake() {
+			var row = document.querySelector('.mjz-input-row');
+			if (!row) {
+				return;
+			}
+
+			row.classList.remove('mjz-shake');
+			void row.offsetWidth; // Kényszerített reflow az animáció újraindításához.
+			row.classList.add('mjz-shake');
+
+			row.addEventListener(
+				'animationend',
+				function () {
+					row.classList.remove('mjz-shake');
+				},
+				{ once: true }
+			);
 		}
 
 		form.addEventListener('submit', function (event) {
